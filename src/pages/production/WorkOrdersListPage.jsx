@@ -171,10 +171,10 @@ export const WorkOrdersListPage = () => {
         loading={loading}
         pagination={pagination}
         onPageChange={(p) => setPagination((prev) => ({ ...prev, page: p }))}
-        onRowClick={(row) => navigate(`/production/work-orders/${row._id}`)}
+        onRowClick={(row) => navigate(`/production/work-orders/${row._id || row.id}`)}
         actions={(row) => (
           <button
-            onClick={() => navigate(`/production/work-orders/${row._id}`)}
+            onClick={() => navigate(`/production/work-orders/${row._id || row.id}`)}
             className="p-1.5 text-slate-600 hover:text-indigo-600 rounded hover:bg-slate-100"
             title="View Details"
           >

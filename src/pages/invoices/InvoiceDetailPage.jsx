@@ -20,6 +20,10 @@ export const InvoiceDetailPage = () => {
       navigate('/invoices/list', { replace: true });
       return;
     }
+    if (!id || id === 'undefined') {
+      navigate('/invoices/list', { replace: true });
+      return;
+    }
     loadInvoice();
   }, [id]);
 

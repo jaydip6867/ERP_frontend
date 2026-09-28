@@ -86,10 +86,10 @@ export const DeliveryTrackingPage = () => {
         columns={columns}
         data={dispatches}
         loading={loading}
-        onRowClick={(row) => navigate(`/dispatch/${row._id}`)}
+        onRowClick={(row) => navigate(`/dispatch/${row._id || row.id}`)}
         actions={(row) => (
           <button
-            onClick={() => navigate(`/dispatch/${row._id}`)}
+            onClick={() => navigate(`/dispatch/${row._id || row.id}`)}
             className="p-1.5 text-slate-600 hover:text-indigo-600 rounded hover:bg-slate-100"
             title="View Dispatch Detail"
           >

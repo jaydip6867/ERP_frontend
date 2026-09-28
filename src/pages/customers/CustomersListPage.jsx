@@ -228,10 +228,10 @@ export const CustomersListPage = () => {
         loading={loading}
         pagination={pagination}
         onPageChange={(page) => loadCustomers(page)}
-        onRowClick={(row) => navigate(`/customers/${row._id}/360`)}
+        onRowClick={(row) => navigate(`/customers/${row._id || row.id}/360`)}
         actions={(row) => (
           <button
-            onClick={() => navigate(`/customers/${row._id}/360`)}
+            onClick={() => navigate(`/customers/${row._id || row.id}/360`)}
             className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold transition flex items-center gap-1.5"
           >
             <Eye className="w-3.5 h-3.5" />

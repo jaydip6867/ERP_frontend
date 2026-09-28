@@ -163,11 +163,11 @@ export const SalesOrdersListPage = () => {
         loading={loading}
         pagination={pagination}
         onPageChange={(p) => setPagination((prev) => ({ ...prev, page: p }))}
-        onRowClick={(row) => navigate(`/sales/orders/${row._id}`)}
+        onRowClick={(row) => navigate(`/sales/orders/${row._id || row.id}`)}
         actions={(row) => (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate(`/sales/orders/${row._id}`)}
+              onClick={() => navigate(`/sales/orders/${row._id || row.id}`)}
               className="p-1.5 text-slate-600 hover:text-indigo-600 rounded hover:bg-slate-100"
               title="View Order Details"
             >

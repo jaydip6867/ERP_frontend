@@ -16,6 +16,10 @@ export const PurchaseOrderDetailPage = () => {
       navigate('/purchase/orders', { replace: true });
       return;
     }
+    if (!id || id === 'undefined') {
+      navigate('/purchase/orders', { replace: true });
+      return;
+    }
     loadPo();
   }, [id]);
 

@@ -14,7 +14,7 @@ import {
   XCircle,
   FileCheck,
 } from 'lucide-react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { customerService } from '../../services/customer.service';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { StatusBadge } from '../../components/shell/StatusBadge';
@@ -22,6 +22,7 @@ import { Modal } from '../../components/shell/Modal';
 
 export const Customer360Page = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -45,6 +46,10 @@ export const Customer360Page = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (!id || id === 'undefined') {
+      navigate('/customers', { replace: true });
+      return;
+    }
     loadCustomer360();
   }, [id]);
 

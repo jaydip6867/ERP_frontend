@@ -17,6 +17,10 @@ export const GrnDetailPage = () => {
       navigate('/purchase/grn', { replace: true });
       return;
     }
+    if (!id || id === 'undefined') {
+      navigate('/purchase/grn', { replace: true });
+      return;
+    }
     loadGrn();
   }, [id]);
 

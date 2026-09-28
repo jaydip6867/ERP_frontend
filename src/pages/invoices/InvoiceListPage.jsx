@@ -153,18 +153,18 @@ export const InvoiceListPage = () => {
         loading={loading}
         pagination={pagination}
         onPageChange={(p) => setPagination((prev) => ({ ...prev, page: p }))}
-        onRowClick={(row) => navigate(`/invoices/${row._id}`)}
+        onRowClick={(row) => navigate(`/invoices/${row._id || row.id}`)}
         actions={(row) => (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate(`/invoices/${row._id}`)}
+              onClick={() => navigate(`/invoices/${row._id || row.id}`)}
               className="p-1.5 text-slate-600 hover:text-indigo-600 rounded hover:bg-slate-100"
               title="View Invoice"
             >
               <Eye className="w-4 h-4" />
             </button>
             <button
-              onClick={() => navigate(`/invoices/${row._id}/print`)}
+              onClick={() => navigate(`/invoices/${row._id || row.id}/print`)}
               className="p-1.5 text-slate-600 hover:text-indigo-600 rounded hover:bg-slate-100"
               title="Print Tax Invoice"
             >

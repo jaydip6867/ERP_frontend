@@ -20,6 +20,10 @@ export const DispatchDetailPage = () => {
       navigate('/dispatch', { replace: true });
       return;
     }
+    if (!id || id === 'undefined') {
+      navigate('/dispatch', { replace: true });
+      return;
+    }
     loadDispatch();
   }, [id]);
 

@@ -55,17 +55,25 @@ export const CreateSalesOrderPage = () => {
         adminService.getWarehouses(),
       ]);
 
-      setCustomers(custRes.data || []);
-      const bList = branchRes.data || [];
-      const wList = whRes.data || [];
+      const cList = Array.isArray(custRes.data)
+        ? custRes.data
+        : (custRes.data?.customers || []);
+      const bList = Array.isArray(branchRes.data)
+        ? branchRes.data
+        : (branchRes.data?.branches || []);
+      const wList = Array.isArray(whRes.data)
+        ? whRes.data
+        : (whRes.data?.warehouses || []);
+
+      setCustomers(cList);
       setBranches(bList);
       setWarehouses(wList);
 
       setFormData((prev) => ({
         ...prev,
-        customer_id: custRes.data?.[0]?._id || '',
-        branch_id: bList[0]?._id || '',
-        warehouse_id: wList[0]?._id || '',
+        customer_id: prev.customer_id || cList[0]?._id || cList[0]?.id || '',
+        branch_id: prev.branch_id || bList[0]?._id || bList[0]?.id || '',
+        warehouse_id: prev.warehouse_id || wList[0]?._id || wList[0]?.id || '',
       }));
     } catch (err) {
       console.error('Failed to load prerequisites:', err);
@@ -73,13 +81,14 @@ export const CreateSalesOrderPage = () => {
   };
 
   const handleProductSelect = (product) => {
+    const prodId = product._id || product.id;
     setItems((prev) => {
       const newItems = [...prev];
       const targetIdx = newItems.findIndex((it) => !it.product_id);
       const itemData = {
-        product_id: product._id,
+        product_id: prodId,
         product_name: product.product_name,
-        product_code: product.product_code,
+        product_code: product.product_code || product.sku || '',
         ordered_qty: 1,
         rate: product.selling_rate || 0,
         discount_percent: 0,
@@ -148,7 +157,12 @@ export const CreateSalesOrderPage = () => {
         items,
       };
       const res = await salesOrderService.createOrder(payload);
-      navigate(`/sales/orders/${res.data?._id || ''}`);
+      const createdId = res.data?._id || res.data?.id;
+      if (createdId) {
+        navigate(`/sales/orders/${createdId}`);
+      } else {
+        navigate('/sales/orders');
+      }
     } catch (err) {
       console.error('Failed to create sales order:', err);
       alert(err.response?.data?.message || 'Error creating sales order');
@@ -194,8 +208,8 @@ export const CreateSalesOrderPage = () => {
                 required
               >
                 <option value="">Select customer...</option>
-                {customers.map((c) => (
-                  <option key={c._id} value={c._id}>
+                {(customers || []).map((c) => (
+                  <option key={c._id || c.id} value={c._id || c.id}>
                     {c.display_name || c.company_name} ({c.gstin || 'Unregistered'})
                   </option>
                 ))}
@@ -231,8 +245,8 @@ export const CreateSalesOrderPage = () => {
                 className="w-full text-sm rounded-lg border border-slate-300 p-2.5"
                 required
               >
-                {branches.map((b) => (
-                  <option key={b._id} value={b._id}>
+                {(branches || []).map((b) => (
+                  <option key={b._id || b.id} value={b._id || b.id}>
                     {b.branch_name}
                   </option>
                 ))}
@@ -247,8 +261,8 @@ export const CreateSalesOrderPage = () => {
                 className="w-full text-sm rounded-lg border border-slate-300 p-2.5"
                 required
               >
-                {warehouses.map((w) => (
-                  <option key={w._id} value={w._id}>
+                {(warehouses || []).map((w) => (
+                  <option key={w._id || w.id} value={w._id || w.id}>
                     {w.warehouse_name} ({w.warehouse_code})
                   </option>
                 ))}
@@ -479,6 +493,7 @@ export const CreateSalesOrderPage = () => {
 
       {showProductModal && (
         <ProductSelector
+          isOpen={showProductModal}
           onSelect={handleProductSelect}
           onClose={() => setShowProductModal(false)}
         />

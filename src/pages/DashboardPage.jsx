@@ -252,7 +252,7 @@ export const DashboardPage = () => {
                     </td>
                     <td className="py-3 px-3 text-right">
                       <Link
-                        to={`/sales/quotations/${q._id}`}
+                        to={`/sales/quotations/${q._id || q.id}`}
                         className="text-indigo-600 hover:underline font-bold"
                       >
                         Inspect

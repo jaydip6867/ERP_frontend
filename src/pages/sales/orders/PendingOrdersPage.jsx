@@ -99,7 +99,7 @@ export const PendingOrdersPage = () => {
         loading={loading}
         actions={(row) => (
           <button
-            onClick={() => navigate(`/sales/orders/${row._id}`)}
+            onClick={() => navigate(`/sales/orders/${row._id || row.id}`)}
             className="p-1.5 text-slate-600 hover:text-indigo-600 rounded hover:bg-slate-100"
             title="Open Order"
           >

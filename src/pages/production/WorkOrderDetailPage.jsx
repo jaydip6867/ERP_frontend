@@ -20,6 +20,10 @@ export const WorkOrderDetailPage = () => {
       navigate('/production/work-orders', { replace: true });
       return;
     }
+    if (!id || id === 'undefined') {
+      navigate('/production/work-orders', { replace: true });
+      return;
+    }
     loadWorkOrder();
   }, [id]);
 

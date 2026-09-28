@@ -182,12 +182,12 @@ export const EmployeesListPage = () => {
         columns={columns}
         data={employees}
         loading={loading}
-        rowKey="_id"
-        onRowClick={(row) => navigate(`/hr/employees/${row._id}`)}
+        rowKey={(row) => row._id || row.id}
+        onRowClick={(row) => navigate(`/hr/employees/${row._id || row.id}`)}
         actions={(row) => (
           <div className="flex items-center gap-1.5">
             <Link
-              to={`/hr/employees/${row._id}`}
+              to={`/hr/employees/${row._id || row.id}`}
               className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition"
               title="View Profile"
             >
@@ -196,7 +196,7 @@ export const EmployeesListPage = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                handleDelete(row._id, row.full_name);
+                handleDelete(row._id || row.id, row.full_name);
               }}
               className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
               title="Deactivate / Archive"

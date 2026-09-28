@@ -167,10 +167,10 @@ export const QuotationsListPage = () => {
         loading={loading}
         pagination={pagination}
         onPageChange={(page) => loadQuotations(page)}
-        onRowClick={(row) => navigate(`/sales/quotations/${row._id}`)}
+        onRowClick={(row) => navigate(`/sales/quotations/${row._id || row.id}`)}
         actions={(row) => (
           <button
-            onClick={() => navigate(`/sales/quotations/${row._id}`)}
+            onClick={() => navigate(`/sales/quotations/${row._id || row.id}`)}
             className="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs font-semibold transition flex items-center gap-1"
           >
             <Eye className="w-3.5 h-3.5" />

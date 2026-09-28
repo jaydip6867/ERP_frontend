@@ -33,6 +33,10 @@ export const QuotationDetailPage = () => {
       navigate('/sales/quotations/new', { replace: true });
       return;
     }
+    if (!id || id === 'undefined') {
+      navigate('/sales/quotations', { replace: true });
+      return;
+    }
     loadQuotation();
   }, [id]);
 

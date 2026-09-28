@@ -34,6 +34,10 @@ export const OrderDetailPage = () => {
       navigate('/sales/orders/create', { replace: true });
       return;
     }
+    if (!id || id === 'undefined') {
+      navigate('/sales/orders', { replace: true });
+      return;
+    }
     loadOrder();
   }, [id]);
 

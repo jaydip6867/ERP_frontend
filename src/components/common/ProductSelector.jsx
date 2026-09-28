@@ -3,7 +3,7 @@ import { Search, Check, Package, X } from 'lucide-react';
 import { productService } from '../../services/product.service';
 
 export const ProductSelector = ({
-  isOpen,
+  isOpen = true,
   onClose,
   onSelect,
   title = 'Select Product',
@@ -79,7 +79,7 @@ export const ProductSelector = ({
           >
             <option value="">All Categories</option>
             {categories.map((c) => (
-              <option key={c._id} value={c._id}>
+              <option key={c._id || c.id} value={c._id || c.id}>
                 {c.category_name}
               </option>
             ))}
@@ -95,7 +95,7 @@ export const ProductSelector = ({
           ) : (
             products.map((p) => (
               <div
-                key={p._id}
+                key={p._id || p.id}
                 onClick={() => {
                   onSelect(p);
                   onClose();

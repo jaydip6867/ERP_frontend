@@ -16,6 +16,10 @@ export const EmployeeDetailPage = () => {
       navigate('/hr/employees/create', { replace: true });
       return;
     }
+    if (!id || id === 'undefined') {
+      navigate('/hr/employees', { replace: true });
+      return;
+    }
     loadEmployee();
   }, [id]);
 
