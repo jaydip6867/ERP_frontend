@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, UserCheck, UserX, Shield, Edit2, Lock } from 'lucide-react';
+import { Plus, UserCheck, UserX, Shield, Edit2, Lock, CheckCircle2, XCircle } from 'lucide-react';
 import { adminService } from '../../services/admin.service';
 import { roleService } from '../../services/role.service';
+import { useAppStore } from '../../store/useAppStore';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { DataTable } from '../../components/shell/DataTable';
 import { StatusBadge } from '../../components/shell/StatusBadge';
@@ -9,8 +10,10 @@ import { Modal } from '../../components/shell/Modal';
 import { FilterBar } from '../../components/shell/FilterBar';
 
 export const UsersPage = () => {
+  const { user: currentUser } = useAppStore();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [togglingId, setTogglingId] = useState(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [roles, setRoles] = useState([]);
@@ -128,6 +131,43 @@ export const UsersPage = () => {
     }
   };
 
+  const handleToggleStatus = async (user) => {
+    const userId = user._id || user.id;
+    const currentStatus = user.status;
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+
+    if (user.email === 'admin@danzaerp.com') {
+      alert('The primary system administrator account cannot be deactivated.');
+      return;
+    }
+
+    const currentUserId = currentUser?._id || currentUser?.id;
+    if (currentUserId && (currentUserId === userId || currentUserId.toString() === userId.toString())) {
+      alert('You cannot deactivate your own active session account.');
+      return;
+    }
+
+    try {
+      setTogglingId(userId);
+      setUsers((prev) =>
+        prev.map((u) =>
+          (u._id === userId || u.id === userId) ? { ...u, status: newStatus } : u
+        )
+      );
+
+      await adminService.updateUser(userId, { status: newStatus });
+    } catch (err) {
+      setUsers((prev) =>
+        prev.map((u) =>
+          (u._id === userId || u.id === userId) ? { ...u, status: currentStatus } : u
+        )
+      );
+      alert(err.response?.data?.message || err.message || 'Failed to update user status');
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   const columns = [
     {
       header: 'User Code',
@@ -150,7 +190,7 @@ export const UsersPage = () => {
       render: (val) => (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700">
           <Shield className="w-3.5 h-3.5 text-indigo-500" />
-          {val?.role_name || 'No Role'}
+          {val?.role_name || (typeof val === 'string' ? val : 'No Role')}
         </span>
       ),
     },
@@ -164,9 +204,63 @@ export const UsersPage = () => {
       key: 'department',
     },
     {
-      header: 'Status',
+      header: 'Status & Access',
       key: 'status',
-      render: (val) => <StatusBadge status={val} />,
+      render: (val, row) => {
+        const isActive = val === 'active';
+        const currentUserId = currentUser?._id || currentUser?.id;
+        const rowId = row._id || row.id;
+        const isSelfOrAdmin =
+          row.email === 'admin@danzaerp.com' ||
+          (currentUserId && currentUserId.toString() === rowId.toString());
+        const isToggling = togglingId === rowId;
+
+        return (
+          <div
+            className="flex items-center gap-3"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              disabled={isToggling || isSelfOrAdmin}
+              onClick={() => handleToggleStatus(row)}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 ${
+                isActive ? 'bg-emerald-500' : 'bg-slate-300'
+              } ${isSelfOrAdmin ? 'opacity-40 cursor-not-allowed' : ''} ${
+                isToggling ? 'opacity-50 cursor-wait' : ''
+              }`}
+              title={
+                isSelfOrAdmin
+                  ? 'Primary administrator session cannot be deactivated'
+                  : isActive
+                  ? 'Active: User can log in. Click to deactivate and block login.'
+                  : 'Inactive: Login blocked. Click to activate user.'
+              }
+            >
+              <span className="sr-only">Toggle active status</span>
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out ${
+                  isActive ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+            <span
+              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                isActive
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-rose-50 text-rose-700 border border-rose-200'
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                  isActive ? 'bg-emerald-500' : 'bg-rose-500'
+                }`}
+              />
+              {isActive ? 'Active' : 'Inactive'}
+            </span>
+          </div>
+        );
+      },
     },
   ];
 
@@ -307,6 +401,29 @@ export const UsersPage = () => {
                 onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Designation</label>
+              <input
+                type="text"
+                value={formData.designation}
+                onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Account Status (Login Access) *</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-semibold"
+              >
+                <option value="active">Active (Permitted to log in)</option>
+                <option value="inactive">Inactive (Login blocked)</option>
+              </select>
             </div>
           </div>
 
