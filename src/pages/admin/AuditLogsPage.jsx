@@ -35,7 +35,10 @@ export const AuditLogsPage = () => {
         module: moduleFilter || undefined,
         action: actionFilter || undefined,
       });
-      setAuditLogs(res.data?.logs || res.data || []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : (res.data?.logs || res.data?.data || []);
+      setAuditLogs(list);
     } catch (err) {
       console.error('Failed to load audit logs:', err);
     } finally {
@@ -47,7 +50,10 @@ export const AuditLogsPage = () => {
     try {
       setLoading(true);
       const res = await adminService.getLoginHistory({ search });
-      setLoginHistory(res.data?.history || res.data || []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : (res.data?.history || res.data?.data || []);
+      setLoginHistory(list);
     } catch (err) {
       console.error('Failed to load login history:', err);
     } finally {

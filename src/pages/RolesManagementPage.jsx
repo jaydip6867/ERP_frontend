@@ -3,6 +3,7 @@ import {
   Check,
   CheckCircle2,
   ChevronRight,
+  Edit2,
   Filter,
   Lock,
   Plus,
@@ -59,6 +60,46 @@ export const RolesManagementPage = () => {
   });
   const [creatingRole, setCreatingRole] = useState(false);
 
+  // Edit Role Modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editRoleData, setEditRoleData] = useState({
+    role_name: '',
+    description: '',
+    status: 'active',
+  });
+  const [updatingRole, setUpdatingRole] = useState(false);
+
+  const handleOpenEditRole = () => {
+    if (!selectedRole) return;
+    setEditRoleData({
+      role_name: selectedRole.role_name || '',
+      description: selectedRole.description || '',
+      status: selectedRole.status || 'active',
+    });
+    setEditModalOpen(true);
+  };
+
+  const handleUpdateRole = async (e) => {
+    e.preventDefault();
+    if (!selectedRole?._id) return;
+    setUpdatingRole(true);
+    setErrorMessage(null);
+    try {
+      const res = await roleService.updateRole(selectedRole._id, editRoleData);
+      const updated = res.data?.role || res.data;
+      setRoles((prev) =>
+        prev.map((r) => (r._id === updated._id ? { ...r, ...updated } : r))
+      );
+      setSelectedRole((prev) => ({ ...prev, ...updated }));
+      setEditModalOpen(false);
+      setServerMessage(`Role '${updated.role_name}' updated successfully.`);
+    } catch (err) {
+      setErrorMessage(err.response?.data?.message || err.message || 'Failed to update role');
+    } finally {
+      setUpdatingRole(false);
+    }
+  };
+
   // Fetch all roles
   const fetchRoles = async () => {
     setLoadingRoles(true);
@@ -104,10 +145,6 @@ export const RolesManagementPage = () => {
   }, [selectedRole?._id]);
 
   const handleToggleAction = (moduleCode, actionKey) => {
-    if (selectedRole?.is_system_role && (selectedRole.role_code === 'OWNER' || selectedRole.role_code === 'ADMIN')) {
-      return; // Immutable superuser roles
-    }
-
     setPermissions((prev) =>
       prev.map((perm) => {
         if (perm.module === moduleCode) {
@@ -126,10 +163,6 @@ export const RolesManagementPage = () => {
   };
 
   const handleDataScopeChange = (moduleCode, scope) => {
-    if (selectedRole?.is_system_role && (selectedRole.role_code === 'OWNER' || selectedRole.role_code === 'ADMIN')) {
-      return;
-    }
-
     setPermissions((prev) =>
       prev.map((perm) =>
         perm.module === moduleCode ? { ...perm, data_scope: scope } : perm
@@ -313,29 +346,30 @@ export const RolesManagementPage = () => {
                 </CardDescription>
               </div>
 
-              {!isSuperSelected && (
+              <div className="flex items-center gap-2">
+                {selectedRole && (
+                  <Button variant="outline" size="sm" onClick={handleOpenEditRole}>
+                    <Edit2 className="w-3.5 h-3.5 mr-1.5" />
+                    Edit Role
+                  </Button>
+                )}
                 <Button size="sm" onClick={handleSavePermissions} isLoading={savingMatrix}>
                   <Save className="w-3.5 h-3.5 mr-1.5" />
                   Save Matrix
                 </Button>
-              )}
+              </div>
             </CardHeader>
 
             <CardContent className="p-0 overflow-x-auto">
-              {isSuperSelected ? (
-                <div className="p-8 text-center bg-indigo-50/40 rounded-b-xl space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-2">
-                    <Sparkles className="w-6 h-6" />
+              {isSuperSelected && (
+                <div className="p-3 bg-indigo-50/80 border-b border-indigo-100 flex items-center justify-between text-xs text-indigo-900">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <span><b>Universal Access Role</b>: Pre-configured with universal module permissions. You can customize actions or data scopes below and click Save Matrix.</span>
                   </div>
-                  <h3 className="font-bold text-slate-900 text-sm">
-                    {selectedRole?.role_name} has Permanent Universal Access
-                  </h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    The {selectedRole?.role_name} role is hardwired into the authorization engine with full permissions on all modules and an unrestricted <b>ALL</b> data scope.
-                  </p>
                 </div>
-              ) : (
-                <table className="w-full text-xs text-left border-collapse">
+              )}
+              <table className="w-full text-xs text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-600 font-semibold uppercase text-[10px] tracking-wider">
                       <th className="py-3 px-4">ERP Module</th>
@@ -388,7 +422,6 @@ export const RolesManagementPage = () => {
                     ))}
                   </tbody>
                 </table>
-              )}
             </CardContent>
           </Card>
         </div>
@@ -458,6 +491,96 @@ export const RolesManagementPage = () => {
                 </Button>
                 <Button type="submit" isLoading={creatingRole}>
                   Create Role
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Role Modal */}
+      {editModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="font-bold text-base text-slate-900">
+                Edit Role: {selectedRole?.role_name}
+              </h3>
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateRole} className="space-y-4 text-xs">
+              <div>
+                <Input
+                  label="Role Display Name"
+                  value={editRoleData.role_name}
+                  onChange={(e) =>
+                    setEditRoleData({ ...editRoleData, role_name: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-1">
+                  Role Code
+                </label>
+                <input
+                  disabled
+                  value={selectedRole?.role_code || ''}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-500 font-mono text-sm cursor-not-allowed"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">
+                  System identifier code cannot be altered once assigned.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-1">
+                  Description
+                </label>
+                <textarea
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Describe departmental responsibilities..."
+                  value={editRoleData.description}
+                  onChange={(e) =>
+                    setEditRoleData({ ...editRoleData, description: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-slate-700 block mb-1">
+                  Status
+                </label>
+                <select
+                  value={editRoleData.status}
+                  onChange={(e) =>
+                    setEditRoleData({ ...editRoleData, status: e.target.value })
+                  }
+                  className="w-full text-xs font-semibold px-3 py-2 rounded-lg border border-slate-200 bg-white"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setEditModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" isLoading={updatingRole}>
+                  Save Changes
                 </Button>
               </div>
             </form>

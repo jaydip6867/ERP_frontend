@@ -51,8 +51,14 @@ export const BranchesWarehousesPage = () => {
         adminService.getBranches(),
         adminService.getWarehouses(),
       ]);
-      setBranches(bRes.data || []);
-      setWarehouses(wRes.data || []);
+      const bList = Array.isArray(bRes.data)
+        ? bRes.data
+        : (bRes.data?.branches || bRes.data?.data || []);
+      const wList = Array.isArray(wRes.data)
+        ? wRes.data
+        : (wRes.data?.warehouses || wRes.data?.data || []);
+      setBranches(bList);
+      setWarehouses(wList);
     } catch (err) {
       console.error('Failed to load branches and warehouses:', err);
     } finally {
@@ -65,7 +71,7 @@ export const BranchesWarehousesPage = () => {
     try {
       setSaving(true);
       if (editingBranch) {
-        await adminService.updateBranch(editingBranch._id, branchForm);
+        await adminService.updateBranch(editingBranch._id || editingBranch.id, branchForm);
       } else {
         await adminService.createBranch(branchForm);
       }
@@ -83,7 +89,7 @@ export const BranchesWarehousesPage = () => {
     try {
       setSaving(true);
       if (editingWh) {
-        await adminService.updateWarehouse(editingWh._id, whForm);
+        await adminService.updateWarehouse(editingWh._id || editingWh.id, whForm);
       } else {
         await adminService.createWarehouse(whForm);
       }
@@ -174,7 +180,7 @@ export const BranchesWarehousesPage = () => {
                 setWhForm({
                   warehouse_name: '',
                   warehouse_code: '',
-                  branch_id: branches[0]?._id || '',
+                  branch_id: branches[0]?._id || branches[0]?.id || '',
                   warehouse_type: 'central',
                   city: '',
                   state: '',
@@ -202,7 +208,7 @@ export const BranchesWarehousesPage = () => {
           }`}
         >
           <GitBranch className="w-4 h-4" />
-          Branches ({branches.length})
+          Branches ({(Array.isArray(branches) ? branches : []).length})
         </button>
         <button
           onClick={() => setActiveTab('warehouses')}
@@ -213,15 +219,16 @@ export const BranchesWarehousesPage = () => {
           }`}
         >
           <Warehouse className="w-4 h-4" />
-          Warehouses & Depots ({warehouses.length})
+          Warehouses & Depots ({(Array.isArray(warehouses) ? warehouses : []).length})
         </button>
       </div>
 
       {activeTab === 'branches' ? (
         <DataTable
           columns={branchColumns}
-          data={branches}
+          data={Array.isArray(branches) ? branches : []}
           loading={loading}
+          rowKey={(row) => row._id || row.id}
           actions={(row) => (
             <button
               onClick={() => {
@@ -238,15 +245,16 @@ export const BranchesWarehousesPage = () => {
       ) : (
         <DataTable
           columns={whColumns}
-          data={warehouses}
+          data={Array.isArray(warehouses) ? warehouses : []}
           loading={loading}
+          rowKey={(row) => row._id || row.id}
           actions={(row) => (
             <button
               onClick={() => {
                 setEditingWh(row);
                 setWhForm({
                   ...row,
-                  branch_id: row.branch_id?._id || row.branch_id || '',
+                  branch_id: row.branch_id?._id || row.branch_id?.id || row.branch_id || '',
                 });
                 setIsWhModalOpen(true);
               }}
@@ -401,8 +409,8 @@ export const BranchesWarehousesPage = () => {
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               >
                 <option value="">Select Branch</option>
-                {branches.map((b) => (
-                  <option key={b._id} value={b._id}>
+                {(Array.isArray(branches) ? branches : []).map((b) => (
+                  <option key={b._id || b.id} value={b._id || b.id}>
                     {b.branch_name}
                   </option>
                 ))}

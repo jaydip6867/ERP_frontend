@@ -44,7 +44,10 @@ export const UsersPage = () => {
         search,
         status: statusFilter || undefined,
       });
-      setUsers(res.data?.users || res.data || []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : (res.data?.users || res.data?.data || []);
+      setUsers(list);
     } catch (err) {
       console.error('Failed to load users:', err);
     } finally {
@@ -55,11 +58,17 @@ export const UsersPage = () => {
   const loadLookups = async () => {
     try {
       const [rolesRes, branchesRes] = await Promise.all([
-        roleService.getRoles(),
+        roleService.getRoles({ limit: 100 }),
         adminService.getBranches(),
       ]);
-      setRoles(rolesRes.data || []);
-      setBranches(branchesRes.data || []);
+      const rList = Array.isArray(rolesRes.data)
+        ? rolesRes.data
+        : (rolesRes.data?.roles || rolesRes.data?.data || []);
+      const bList = Array.isArray(branchesRes.data)
+        ? branchesRes.data
+        : (branchesRes.data?.branches || branchesRes.data?.data || []);
+      setRoles(rList);
+      setBranches(bList);
     } catch (err) {
       console.error('Failed to load roles/branches:', err);
     }
@@ -71,8 +80,8 @@ export const UsersPage = () => {
       full_name: '',
       email: '',
       mobile: '',
-      role_id: roles[0]?._id || '',
-      branch_id: branches[0]?._id || '',
+      role_id: roles[0]?._id || roles[0]?.id || '',
+      branch_id: branches[0]?._id || branches[0]?.id || '',
       department: 'Sales',
       designation: 'Executive',
       password: '',
@@ -84,11 +93,11 @@ export const UsersPage = () => {
   const handleOpenEdit = (user) => {
     setEditingUser(user);
     setFormData({
-      full_name: user.full_name,
-      email: user.email,
+      full_name: user.full_name || '',
+      email: user.email || '',
       mobile: user.mobile || '',
-      role_id: user.role_id?._id || user.role_id || '',
-      branch_id: user.branch_id?._id || user.branch_id || '',
+      role_id: user.role_id?._id || user.role_id?.id || (typeof user.role_id === 'string' ? user.role_id : ''),
+      branch_id: user.branch_id?._id || user.branch_id?.id || (typeof user.branch_id === 'string' ? user.branch_id : ''),
       department: user.department || 'Sales',
       designation: user.designation || 'Executive',
       password: '',
@@ -101,15 +110,19 @@ export const UsersPage = () => {
     e.preventDefault();
     try {
       setSaving(true);
+      const payload = { ...formData };
+      if (!payload.branch_id) delete payload.branch_id;
+      if (!payload.password) delete payload.password;
+
       if (editingUser) {
-        await adminService.updateUser(editingUser._id, formData);
+        await adminService.updateUser(editingUser._id || editingUser.id, payload);
       } else {
-        await adminService.createUser(formData);
+        await adminService.createUser(payload);
       }
       setIsModalOpen(false);
       loadUsers();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to save user');
+      alert(err.response?.data?.message || err.message || 'Failed to save user');
     } finally {
       setSaving(false);
     }
@@ -198,8 +211,9 @@ export const UsersPage = () => {
 
       <DataTable
         columns={columns}
-        data={users}
+        data={Array.isArray(users) ? users : []}
         loading={loading}
+        rowKey={(row) => row._id || row.id}
         actions={(row) => (
           <button
             onClick={() => handleOpenEdit(row)}
@@ -260,8 +274,8 @@ export const UsersPage = () => {
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               >
                 <option value="">Select Role</option>
-                {roles.map((r) => (
-                  <option key={r._id} value={r._id}>
+                {(Array.isArray(roles) ? roles : []).map((r) => (
+                  <option key={r._id || r.id} value={r._id || r.id}>
                     {r.role_name} ({r.role_code})
                   </option>
                 ))}
@@ -278,8 +292,8 @@ export const UsersPage = () => {
                 className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
               >
                 <option value="">All Branches</option>
-                {branches.map((b) => (
-                  <option key={b._id} value={b._id}>
+                {(Array.isArray(branches) ? branches : []).map((b) => (
+                  <option key={b._id || b.id} value={b._id || b.id}>
                     {b.branch_name}
                   </option>
                 ))}

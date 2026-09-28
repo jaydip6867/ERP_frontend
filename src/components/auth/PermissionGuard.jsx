@@ -15,12 +15,24 @@ export const usePermission = (moduleCode, action = 'can_view') => {
     return { hasPermission: false, dataScope: 'OWN', isSuperuser: false };
   }
 
-  const roleCode = user.role_id?.role_code || (typeof user.role_id === 'string' ? '' : '');
+  const roleCode = (
+    user.role_id?.role_code ||
+    user.role?.role_code ||
+    user.role_code ||
+    (typeof user.role === 'string' ? user.role : '') ||
+    ''
+  ).toUpperCase();
+
   const isSuper =
     roleCode === 'OWNER' ||
     roleCode === 'ADMIN' ||
     roleCode === 'SUPER_ADMIN' ||
-    user.email === 'admin@danzaerp.com';
+    roleCode === 'FOUNDER' ||
+    roleCode === 'BOARD_FOUNDER' ||
+    roleCode === 'BOARD / FOUNDER' ||
+    roleCode === 'CEO' ||
+    user.email === 'admin@danzaerp.com' ||
+    user.email === 'owner@danzaerp.com';
 
   if (isSuper) {
     return { hasPermission: true, dataScope: 'ALL', isSuperuser: true };
