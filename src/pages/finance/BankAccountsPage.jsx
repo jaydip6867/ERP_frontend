@@ -20,8 +20,8 @@ export const BankAccountsPage = () => {
         financeService.getBankAccounts(),
         financeService.getBankTransactions(),
       ]);
-      setBanks(banksRes.data || []);
-      setTransactions(txRes.data || []);
+      setBanks(Array.isArray(banksRes?.data) ? banksRes.data : (banksRes?.data?.banks || []));
+      setTransactions(Array.isArray(txRes?.data) ? txRes.data : (txRes?.data?.transactions || []));
     } catch (err) {
       console.error('Failed to load bank data:', err);
     } finally {
@@ -43,7 +43,7 @@ export const BankAccountsPage = () => {
 
       {/* Bank Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {banks.map((b) => (
+        {(Array.isArray(banks) ? banks : []).map((b) => (
           <div key={b._id} className="p-5 bg-white border border-slate-200 rounded-xl shadow-xs">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
@@ -86,12 +86,12 @@ export const BankAccountsPage = () => {
                 <tr>
                   <td colSpan="7" className="text-center py-8 text-slate-500">Loading transactions...</td>
                 </tr>
-              ) : transactions.length === 0 ? (
+              ) : (Array.isArray(transactions) ? transactions : []).length === 0 ? (
                 <tr>
                   <td colSpan="7" className="text-center py-8 text-slate-500">No bank transactions recorded</td>
                 </tr>
               ) : (
-                transactions.map((tx) => (
+                (Array.isArray(transactions) ? transactions : []).map((tx) => (
                   <tr key={tx._id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-4 text-slate-600 text-xs font-mono">
                       {new Date(tx.transaction_date).toLocaleDateString()}

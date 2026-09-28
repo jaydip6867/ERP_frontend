@@ -69,7 +69,7 @@ export const LeadKanbanPage = () => {
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-6">
           {STAGES.map((st, idx) => {
-            const items = kanbanData[st.key] || [];
+            const items = Array.isArray(kanbanData?.[st.key]) ? kanbanData[st.key] : [];
             const laneTotal = items.reduce((sum, item) => sum + (item.estimated_value || 0), 0);
 
             return (

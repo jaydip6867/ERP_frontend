@@ -25,7 +25,8 @@ export const ProductDevelopmentPage = () => {
     try {
       setLoading(true);
       const res = await rndService.getProductDevelopment();
-      setProjects(res.data?.projects || []);
+      const list = res.data?.projects || (Array.isArray(res.data) ? res.data : []);
+      setProjects(list);
     } catch (err) {
       toast.error('Failed to load NPD projects');
     } finally {
@@ -67,12 +68,12 @@ export const ProductDevelopmentPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading ? (
           <div className="col-span-full p-12 text-center text-slate-400">Loading NPD project portfolio...</div>
-        ) : projects.length === 0 ? (
+        ) : (Array.isArray(projects) ? projects : []).length === 0 ? (
           <div className="col-span-full bg-white p-12 text-center border border-slate-200 rounded-xl text-slate-500">
             No active NPD projects found.
           </div>
         ) : (
-          projects.map((proj) => {
+          (Array.isArray(projects) ? projects : []).map((proj) => {
             const currentStageIdx = stages.indexOf(proj.current_stage);
 
             return (

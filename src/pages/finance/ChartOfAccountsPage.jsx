@@ -19,7 +19,7 @@ export const ChartOfAccountsPage = () => {
     try {
       setLoading(true);
       const res = await financeService.getChartOfAccounts();
-      setAccounts(res.data || []);
+      setAccounts(Array.isArray(res?.data) ? res.data : (res?.data?.accounts || []));
     } catch (err) {
       console.error('Failed to load chart of accounts:', err);
     } finally {
@@ -27,7 +27,8 @@ export const ChartOfAccountsPage = () => {
     }
   };
 
-  const filtered = accounts.filter((acc) => {
+  const safeAccounts = Array.isArray(accounts) ? accounts : [];
+  const filtered = safeAccounts.filter((acc) => {
     const matchesType = filterType === 'ALL' || acc.account_type === filterType;
     const matchesSearch =
       acc.account_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||

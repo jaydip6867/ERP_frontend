@@ -25,7 +25,8 @@ export const ProblemSolvingPage = () => {
     try {
       setLoading(true);
       const res = await rndService.getProblemSolving();
-      setProjects(res.data?.problemSolving || []);
+      const list = res.data?.projects || res.data?.problemSolving || (Array.isArray(res.data) ? res.data : []);
+      setProjects(list);
     } catch (err) {
       toast.error('Failed to load problem solving projects');
     } finally {
@@ -69,12 +70,12 @@ export const ProblemSolvingPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {loading ? (
           <div className="col-span-full p-12 text-center text-slate-400">Loading problem solving projects...</div>
-        ) : projects.length === 0 ? (
+        ) : (Array.isArray(projects) ? projects : []).length === 0 ? (
           <div className="col-span-full bg-white p-12 text-center border border-slate-200 rounded-xl text-slate-500">
             No active 8D root cause cases open.
           </div>
         ) : (
-          projects.map((proj) => (
+          (Array.isArray(projects) ? projects : []).map((proj) => (
             <div key={proj._id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">

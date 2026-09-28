@@ -28,8 +28,8 @@ export const SamplesPage = () => {
         rndService.getSamples(),
         rndService.getProductDevelopment(),
       ]);
-      setSamples(sRes.data?.samples || []);
-      setProjects(pRes.data?.projects || []);
+      setSamples(sRes.data?.samples || (Array.isArray(sRes.data) ? sRes.data : []));
+      setProjects(pRes.data?.projects || (Array.isArray(pRes.data) ? pRes.data : []));
     } catch (err) {
       toast.error('Failed to load prototype samples');
     } finally {
@@ -84,12 +84,12 @@ export const SamplesPage = () => {
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-slate-400">Loading prototype samples...</td>
                 </tr>
-              ) : samples.length === 0 ? (
+              ) : (Array.isArray(samples) ? samples : []).length === 0 ? (
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-slate-400">No prototype samples logged.</td>
                 </tr>
               ) : (
-                samples.map((s) => (
+                (Array.isArray(samples) ? samples : []).map((s) => (
                   <tr key={s._id} className="hover:bg-slate-50/80 transition">
                     <td className="px-5 py-3.5 font-mono font-bold text-slate-900">{s.sample_code}</td>
                     <td className="px-5 py-3.5 font-medium">{s.project_id?.project_name || 'Project'}</td>
@@ -125,7 +125,7 @@ export const SamplesPage = () => {
                   className="w-full mt-1 p-2 text-sm border rounded-lg"
                 >
                   <option value="">Select NPD Project</option>
-                  {projects.map(p => (
+                  {(Array.isArray(projects) ? projects : []).map(p => (
                     <option key={p._id} value={p._id}>{p.project_name} ({p.project_code})</option>
                   ))}
                 </select>

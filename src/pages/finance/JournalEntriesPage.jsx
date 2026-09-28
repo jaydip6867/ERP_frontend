@@ -17,7 +17,7 @@ export const JournalEntriesPage = () => {
     try {
       setLoading(true);
       const res = await financeService.getJournalEntries();
-      setJournals(res.data || []);
+      setJournals(Array.isArray(res?.data) ? res.data : (res?.data?.journals || []));
     } catch (err) {
       console.error('Failed to load journal entries:', err);
     } finally {
@@ -57,12 +57,12 @@ export const JournalEntriesPage = () => {
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-slate-500">Loading journal entries...</td>
                 </tr>
-              ) : journals.length === 0 ? (
+              ) : (Array.isArray(journals) ? journals : []).length === 0 ? (
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-slate-500">No journal entries recorded</td>
                 </tr>
               ) : (
-                journals.map((j) => (
+                (Array.isArray(journals) ? journals : []).map((j) => (
                   <tr
                     key={j._id}
                     onClick={() => setSelectedJournal(j)}

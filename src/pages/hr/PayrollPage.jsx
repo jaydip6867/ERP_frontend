@@ -45,8 +45,11 @@ export const PayrollPage = () => {
     }
   };
 
-  const totalDisbursed = payroll.reduce((acc, p) => acc + (p.net_salary || 0), 0);
-  const totalEmployees = payroll.length;
+  const safePayroll = Array.isArray(payroll)
+    ? payroll
+    : (Array.isArray(payroll?.payroll) ? payroll.payroll : []);
+  const totalDisbursed = safePayroll.reduce((acc, p) => acc + (p.net_salary || 0), 0);
+  const totalEmployees = safePayroll.length;
 
   return (
     <div className="p-4 sm:p-6 space-y-6">
@@ -127,14 +130,14 @@ export const PayrollPage = () => {
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-slate-400">Loading payroll ledger...</td>
                 </tr>
-              ) : payroll.length === 0 ? (
+              ) : safePayroll.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="p-8 text-center text-slate-400">
                     No payroll generated for this period. Click 'Run Payroll' to calculate.
                   </td>
                 </tr>
               ) : (
-                payroll.map((pay) => (
+                safePayroll.map((pay) => (
                   <tr key={pay._id} className="hover:bg-slate-50/80 transition">
                     <td className="px-5 py-3.5 font-medium text-slate-900">
                       {pay.employee_id?.full_name || 'Staff Member'}

@@ -17,7 +17,7 @@ export const ReceiptsPage = () => {
     try {
       setLoading(true);
       const res = await financeService.getReceipts();
-      setReceipts(res.data || []);
+      setReceipts(Array.isArray(res?.data) ? res.data : (res?.data?.receipts || []));
     } catch (err) {
       console.error('Failed to load receipts:', err);
     } finally {
@@ -57,12 +57,12 @@ export const ReceiptsPage = () => {
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-slate-500">Loading receipts...</td>
                 </tr>
-              ) : receipts.length === 0 ? (
+              ) : (Array.isArray(receipts) ? receipts : []).length === 0 ? (
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-slate-500">No receipts found</td>
                 </tr>
               ) : (
-                receipts.map((r) => (
+                (Array.isArray(receipts) ? receipts : []).map((r) => (
                   <tr
                     key={r._id}
                     onClick={() => setSelectedReceipt(r)}

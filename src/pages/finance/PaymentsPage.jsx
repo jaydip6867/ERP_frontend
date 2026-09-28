@@ -17,7 +17,7 @@ export const PaymentsPage = () => {
     try {
       setLoading(true);
       const res = await financeService.getPayments();
-      setPayments(res.data || []);
+      setPayments(Array.isArray(res?.data) ? res.data : (res?.data?.payments || []));
     } catch (err) {
       console.error('Failed to load payments:', err);
     } finally {
@@ -57,12 +57,12 @@ export const PaymentsPage = () => {
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-slate-500">Loading payments...</td>
                 </tr>
-              ) : payments.length === 0 ? (
+              ) : (Array.isArray(payments) ? payments : []).length === 0 ? (
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-slate-500">No payments found</td>
                 </tr>
               ) : (
-                payments.map((p) => (
+                (Array.isArray(payments) ? payments : []).map((p) => (
                   <tr
                     key={p._id}
                     onClick={() => setSelectedPayment(p)}

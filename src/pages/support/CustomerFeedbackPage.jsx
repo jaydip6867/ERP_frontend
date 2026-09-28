@@ -24,8 +24,9 @@ export const CustomerFeedbackPage = () => {
     }
   };
 
-  const avgNps = feedbacks.length > 0
-    ? Math.round(feedbacks.reduce((s, f) => s + (f.rating || 0), 0) / feedbacks.length * 10) / 10
+  const safeFeedbacks = Array.isArray(feedbacks) ? feedbacks : [];
+  const avgNps = safeFeedbacks.length > 0
+    ? Math.round(safeFeedbacks.reduce((s, f) => s + (f.rating || 0), 0) / safeFeedbacks.length * 10) / 10
     : 4.8;
 
   return (
@@ -81,12 +82,12 @@ export const CustomerFeedbackPage = () => {
                 <tr>
                   <td colSpan="5" className="text-center py-8 text-slate-500">Loading customer feedback...</td>
                 </tr>
-              ) : feedbacks.length === 0 ? (
+              ) : safeFeedbacks.length === 0 ? (
                 <tr>
                   <td colSpan="5" className="text-center py-8 text-slate-500">No customer feedback registered</td>
                 </tr>
               ) : (
-                feedbacks.map((f) => (
+                safeFeedbacks.map((f) => (
                   <tr key={f._id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-4 text-slate-600 text-xs font-mono">
                       {new Date(f.createdAt).toLocaleDateString()}
