@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, UserCheck, UserX, Shield, Edit2, Lock, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, UserCheck, UserX, Shield, Edit2, Lock, CheckCircle2, XCircle, Calendar } from 'lucide-react';
 import { adminService } from '../../services/admin.service';
 import { roleService } from '../../services/role.service';
 import { useAppStore } from '../../store/useAppStore';
@@ -30,6 +30,7 @@ export const UsersPage = () => {
     branch_id: '',
     department: 'Sales',
     designation: 'Executive',
+    expiry_date: '',
     password: '',
     status: 'active',
   });
@@ -87,6 +88,7 @@ export const UsersPage = () => {
       branch_id: branches[0]?._id || branches[0]?.id || '',
       department: 'Sales',
       designation: 'Executive',
+      expiry_date: '',
       password: '',
       status: 'active',
     });
@@ -103,6 +105,9 @@ export const UsersPage = () => {
       branch_id: user.branch_id?._id || user.branch_id?.id || (typeof user.branch_id === 'string' ? user.branch_id : ''),
       department: user.department || 'Sales',
       designation: user.designation || 'Executive',
+      expiry_date: user.expiry_date
+        ? new Date(user.expiry_date).toISOString().split('T')[0]
+        : '',
       password: '',
       status: user.status || 'active',
     });
@@ -116,6 +121,7 @@ export const UsersPage = () => {
       const payload = { ...formData };
       if (!payload.branch_id) delete payload.branch_id;
       if (!payload.password) delete payload.password;
+      if (!payload.expiry_date) payload.expiry_date = null;
 
       if (editingUser) {
         await adminService.updateUser(editingUser._id || editingUser.id, payload);
@@ -202,6 +208,34 @@ export const UsersPage = () => {
     {
       header: 'Department',
       key: 'department',
+    },
+    {
+      header: 'Account Expiry',
+      key: 'expiry_date',
+      render: (val) => {
+        if (!val) {
+          return <span className="text-xs text-slate-400 font-medium">Never</span>;
+        }
+        const expDate = new Date(val);
+        const isExpired = expDate.getTime() <= Date.now();
+        return (
+          <div className="flex flex-col">
+            <span
+              className={`text-xs font-medium flex items-center gap-1.5 ${
+                isExpired ? 'text-rose-600 font-semibold' : 'text-slate-700'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5 opacity-60 flex-shrink-0" />
+              {expDate.toLocaleDateString()}
+            </span>
+            {isExpired && (
+              <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider">
+                Expired (Auto-Inactive)
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       header: 'Status & Access',
@@ -425,6 +459,22 @@ export const UsersPage = () => {
                 <option value="inactive">Inactive (Login blocked)</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+              Account Expiry Date (Optional)
+            </label>
+            <input
+              type="date"
+              value={formData.expiry_date}
+              onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Once this expiry date is reached, the user will automatically be deactivated and blocked from logging in. Leave blank for no expiration.
+            </p>
           </div>
 
           {!editingUser && (
