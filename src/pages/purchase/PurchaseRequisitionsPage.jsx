@@ -55,7 +55,12 @@ export const PurchaseRequisitionsPage = () => {
     try {
       setLoading(true);
       const res = await purchaseService.getRequisitions({ page, limit: 10 });
-      setRequisitions(res.data?.requisitions || []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.requisitions)
+        ? res.data.requisitions
+        : [];
+      setRequisitions(list);
       if (res.meta) {
         setPagination({
           page: res.meta.page,

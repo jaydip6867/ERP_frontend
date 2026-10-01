@@ -5,6 +5,7 @@ export const expenseOwnerService = {
   createExpense: (data) => apiClient.post('/expense-owner/expenses', data),
   getCategories: () => apiClient.get('/expense-owner/categories'),
   createCategory: (data) => apiClient.post('/expense-owner/categories', data),
+  updateCategory: (id, data) => apiClient.put(`/expense-owner/categories/${id}`, data),
   getBudgetReport: (params) => apiClient.get('/expense-owner/budgets', { params }),
   getOwnerLedger: (params) => apiClient.get('/expense-owner/owner-ledger', { params }),
   createOwnerTransaction: (data) => apiClient.post('/expense-owner/owner-ledger', data),

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Star, Phone, Mail, Building, Eye, Edit2 } from 'lucide-react';
+import { Users, Plus, Star, Phone, Mail, Building, Eye, Edit2, MapPin } from 'lucide-react';
 import { purchaseService } from '../../services/purchase.service';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { DataTable } from '../../components/shell/DataTable';
@@ -11,6 +11,7 @@ export const SuppliersListPage = () => {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
 
@@ -20,20 +21,40 @@ export const SuppliersListPage = () => {
     email: '',
     mobile: '',
     gstin: '',
+    pan: '',
     category: 'raw_materials',
     rating: 4,
     payment_terms: 'Net 30 Days',
+    address: {
+      address_line1: '',
+      city: '',
+      state: 'Gujarat',
+      pincode: '',
+    },
   });
 
   useEffect(() => {
     loadSuppliers(pagination.page);
-  }, [pagination.page, search]);
+  }, [pagination.page, search, categoryFilter]);
 
   const loadSuppliers = async (page = 1) => {
     try {
       setLoading(true);
-      const res = await purchaseService.getSuppliers({ page, limit: 10, search });
-      setSuppliers(res.data?.suppliers || []);
+      const res = await purchaseService.getSuppliers({
+        page,
+        limit: 10,
+        search: search.trim() || undefined,
+        category: categoryFilter || undefined,
+      });
+
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.suppliers)
+        ? res.data.suppliers
+        : [];
+
+      setSuppliers(list);
+
       if (res.meta) {
         setPagination({
           page: res.meta.page,
@@ -43,7 +64,7 @@ export const SuppliersListPage = () => {
         });
       }
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load suppliers:', err);
     } finally {
       setLoading(false);
     }
@@ -57,9 +78,16 @@ export const SuppliersListPage = () => {
       email: '',
       mobile: '',
       gstin: '',
+      pan: '',
       category: 'raw_materials',
       rating: 4,
       payment_terms: 'Net 30 Days',
+      address: {
+        address_line1: '',
+        city: '',
+        state: 'Gujarat',
+        pincode: '',
+      },
     });
     setShowModal(true);
   };
@@ -72,9 +100,16 @@ export const SuppliersListPage = () => {
       email: sup.email || '',
       mobile: sup.mobile || '',
       gstin: sup.gstin || '',
+      pan: sup.pan || '',
       category: sup.category || 'raw_materials',
       rating: sup.rating ?? 4,
       payment_terms: sup.payment_terms || 'Net 30 Days',
+      address: {
+        address_line1: sup.address?.address_line1 || '',
+        city: sup.address?.city || '',
+        state: sup.address?.state || 'Gujarat',
+        pincode: sup.address?.pincode || '',
+      },
     });
     setShowModal(true);
   };
@@ -82,15 +117,16 @@ export const SuppliersListPage = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
+      const supplierId = editingSupplier?._id || editingSupplier?.id;
       if (editingSupplier) {
-        await purchaseService.updateSupplier(editingSupplier._id, formData);
+        await purchaseService.updateSupplier(supplierId, formData);
       } else {
         await purchaseService.createSupplier(formData);
       }
       setShowModal(false);
       loadSuppliers(pagination.page);
     } catch (err) {
-      alert(err.response?.data?.message || 'Error saving supplier');
+      alert(err.response?.data?.message || err.message || 'Error saving supplier');
     }
   };
 
@@ -101,7 +137,9 @@ export const SuppliersListPage = () => {
       render: (val, row) => (
         <div>
           <p className="font-semibold text-slate-900">{val}</p>
-          <p className="text-xs font-mono text-slate-500">{row.supplier_code} &bull; {row.gstin || 'Unregistered'}</p>
+          <p className="text-xs font-mono text-slate-500">
+            {row.supplier_code} &bull; {row.gstin || 'Unregistered'}
+          </p>
         </div>
       ),
     },
@@ -111,14 +149,27 @@ export const SuppliersListPage = () => {
       render: (cp, row) => (
         <div className="text-xs text-slate-600">
           <p className="font-medium text-slate-800">{cp || 'N/A'}</p>
-          <p>{row.mobile || row.email}</p>
+          <p className="text-slate-500">{row.mobile || row.email || '-'}</p>
         </div>
       ),
     },
     {
       header: 'Category',
       key: 'category',
-      render: (cat) => <span className="capitalize text-xs font-medium text-slate-700">{cat?.replace('_', ' ')}</span>,
+      render: (cat) => (
+        <span className="capitalize text-xs font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+          {cat?.replace(/_/g, ' ') || 'General'}
+        </span>
+      ),
+    },
+    {
+      header: 'Location',
+      key: 'address',
+      render: (addr) => (
+        <span className="text-xs text-slate-600">
+          {addr?.city ? `${addr.city}, ${addr.state || ''}` : addr?.state || 'India'}
+        </span>
+      ),
     },
     {
       header: 'Rating',
@@ -133,7 +184,7 @@ export const SuppliersListPage = () => {
     {
       header: 'Terms',
       key: 'payment_terms',
-      render: (pt) => <span className="text-xs text-slate-600">{pt}</span>,
+      render: (pt) => <span className="text-xs text-slate-600">{pt || 'Net 30 Days'}</span>,
     },
   ];
 
@@ -143,14 +194,14 @@ export const SuppliersListPage = () => {
         title="Suppliers & Vendors Directory"
         subtitle="Manage vendor masters, ratings, GST compliance, and payment terms."
         breadcrumbs={[
-          { label: 'Dashboard', href: '/dashboard' },
+          { label: 'Dashboard', href: '/' },
           { label: 'Purchase', href: '/purchase' },
           { label: 'Suppliers' },
         ]}
         actions={
           <button
             onClick={handleOpenCreate}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm cursor-pointer transition"
           >
             <Plus className="w-4 h-4" />
             Add Supplier
@@ -158,11 +209,34 @@ export const SuppliersListPage = () => {
         }
       />
 
-      <FilterBar searchValue={search} onSearchChange={setSearch} searchPlaceholder="Search supplier name, code, GSTIN..." filters={[]} />
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        placeholder="Search supplier name, code, GSTIN..."
+        filters={[
+          {
+            label: 'All Categories',
+            value: categoryFilter,
+            onChange: setCategoryFilter,
+            options: [
+              { label: 'Raw Materials', value: 'raw_materials' },
+              { label: 'Consumables & Hardware', value: 'consumables' },
+              { label: 'Packaging', value: 'packaging' },
+              { label: 'Machinery & Spares', value: 'machinery' },
+              { label: 'Services', value: 'services' },
+              { label: 'General', value: 'general' },
+            ],
+          },
+        ]}
+        onReset={() => {
+          setSearch('');
+          setCategoryFilter('');
+        }}
+      />
 
       <DataTable
         columns={columns}
-        data={suppliers}
+        data={Array.isArray(suppliers) ? suppliers : []}
         loading={loading}
         pagination={pagination}
         onPageChange={(p) => setPagination((prev) => ({ ...prev, page: p }))}
@@ -173,13 +247,6 @@ export const SuppliersListPage = () => {
               onClick={() => handleOpenEdit(row)}
               className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
               title="View / Edit Supplier"
-            >
-              <Eye className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleOpenEdit(row)}
-              className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
-              title="Edit Supplier"
             >
               <Edit2 className="w-4 h-4" />
             </button>
@@ -192,7 +259,7 @@ export const SuppliersListPage = () => {
           isOpen={showModal}
           onClose={() => setShowModal(false)}
           title={editingSupplier ? `Edit Supplier: ${editingSupplier.supplier_name}` : 'Register New Supplier'}
-          size="md"
+          size="lg"
         >
           <form onSubmit={handleSave} className="space-y-4 text-sm">
             <div>
@@ -200,97 +267,175 @@ export const SuppliersListPage = () => {
               <input
                 type="text"
                 required
+                placeholder="e.g. Reliance Industries Limited"
                 value={formData.supplier_name}
                 onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
-                className="w-full border border-slate-300 rounded-lg p-2 text-sm"
+                className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Contact Person</label>
                 <input
                   type="text"
+                  placeholder="e.g. Rajesh Kumar"
                   value={formData.contact_person}
                   onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm"
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile / Phone</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Mobile / Phone *</label>
                 <input
                   type="text"
+                  required
+                  placeholder="+91 98765 43210"
                   value={formData.mobile}
                   onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm"
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Email</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
                 <input
                   type="email"
+                  placeholder="vendor@danzaerp.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm"
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">GSTIN</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">GSTIN Number</label>
                 <input
                   type="text"
                   placeholder="24AAACA1234F1Z8"
                   value={formData.gstin}
                   onChange={(e) => setFormData({ ...formData, gstin: e.target.value.toUpperCase() })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm font-mono"
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">Category</label>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm"
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 >
                   <option value="raw_materials">Raw Materials</option>
                   <option value="consumables">Consumables & Hardware</option>
                   <option value="packaging">Packaging</option>
                   <option value="machinery">Machinery & Spares</option>
                   <option value="services">Services</option>
+                  <option value="general">General</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Rating (1 to 5)</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Payment Terms</label>
+                <select
+                  value={formData.payment_terms}
+                  onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                >
+                  <option value="Immediate / Advance">Immediate / Advance</option>
+                  <option value="Net 15 Days">Net 15 Days</option>
+                  <option value="Net 30 Days">Net 30 Days</option>
+                  <option value="Net 45 Days">Net 45 Days</option>
+                  <option value="Net 60 Days">Net 60 Days</option>
+                  <option value="Against Delivery">Against Delivery</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Vendor Rating</label>
                 <select
                   value={formData.rating}
                   onChange={(e) => setFormData({ ...formData, rating: Number(e.target.value) })}
-                  className="w-full border border-slate-300 rounded-lg p-2 text-sm"
+                  className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 >
-                  <option value="5">5 - Excellent (A-grade)</option>
-                  <option value="4">4 - Very Good</option>
-                  <option value="3">3 - Standard</option>
-                  <option value="2">2 - Needs Improvement</option>
-                  <option value="1">1 - Poor</option>
+                  <option value="5">5 ★ - Grade A (Preferred)</option>
+                  <option value="4">4 ★ - Grade B (Reliable)</option>
+                  <option value="3">3 ★ - Grade C (Standard)</option>
+                  <option value="2">2 ★ - Needs Improvement</option>
+                  <option value="1">1 ★ - Critical Attention</option>
                 </select>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
+            <div className="border-t border-slate-100 pt-3">
+              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-indigo-500" />
+                Address & Location
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <input
+                  type="text"
+                  placeholder="Street / Facility Address"
+                  value={formData.address.address_line1}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: { ...formData.address, address_line1: e.target.value },
+                    })
+                  }
+                  className="w-full sm:col-span-3 border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="City (e.g. Surat)"
+                  value={formData.address.city}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: { ...formData.address, city: e.target.value },
+                    })
+                  }
+                  className="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="State (e.g. Gujarat)"
+                  value={formData.address.state}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: { ...formData.address, state: e.target.value },
+                    })
+                  }
+                  className="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                />
+                <input
+                  type="text"
+                  placeholder="PIN Code"
+                  value={formData.address.pincode}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      address: { ...formData.address, pincode: e.target.value },
+                    })
+                  }
+                  className="w-full border border-slate-300 rounded-lg p-2 text-xs font-mono focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50"
+                className="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer"
+                className="px-5 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition cursor-pointer"
               >
                 {editingSupplier ? 'Update Supplier' : 'Save Supplier'}
               </button>

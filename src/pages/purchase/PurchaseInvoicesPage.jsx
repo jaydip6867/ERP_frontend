@@ -20,7 +20,12 @@ export const PurchaseInvoicesPage = () => {
     try {
       setLoading(true);
       const res = await purchaseService.getInvoices({ page, limit: 10 });
-      setInvoices(res.data?.invoices || []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.invoices)
+        ? res.data.invoices
+        : [];
+      setInvoices(list);
       if (res.meta) {
         setPagination({
           page: res.meta.page,

@@ -20,7 +20,12 @@ export const GrnListPage = () => {
     try {
       setLoading(true);
       const res = await purchaseService.getGrns({ page, limit: 10 });
-      setGrns(res.data?.grns || []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.grns)
+        ? res.data.grns
+        : [];
+      setGrns(list);
       if (res.meta) {
         setPagination({
           page: res.meta.page,

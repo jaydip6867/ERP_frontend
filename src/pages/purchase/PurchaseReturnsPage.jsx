@@ -20,7 +20,12 @@ export const PurchaseReturnsPage = () => {
     try {
       setLoading(true);
       const res = await purchaseService.getReturns({ page, limit: 10 });
-      setReturns(res.data?.returns || []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.returns)
+        ? res.data.returns
+        : [];
+      setReturns(list);
       if (res.meta) {
         setPagination({
           page: res.meta.page,
