@@ -1103,7 +1103,7 @@ export const MainLayout = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col antialiased">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-3 sm:px-6 h-16 flex items-center justify-between shadow-xs">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-3 sm:px-6 h-16 flex items-center justify-between shadow-xs print:hidden">
         <div className="flex items-center gap-2 sm:gap-4">
           <button
             onClick={toggleSidebar}
@@ -1238,7 +1238,7 @@ export const MainLayout = () => {
         {/* Sidebar */}
         <aside
           className={cn(
-            'bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out shrink-0',
+            'bg-white border-r border-slate-200 flex flex-col transition-all duration-300 ease-in-out shrink-0 print:hidden',
             // On desktop (lg+): fixed height strictly equal to (100vh - 4rem), sticky at top-16, stays in normal flow
             'lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:z-30',
             // On mobile (< lg): fixed overlay drawer spanning full viewport height
@@ -1512,7 +1512,7 @@ export const MainLayout = () => {
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-full overflow-x-hidden">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-full overflow-x-hidden print:p-0 print:m-0 print:overflow-visible">
           <Outlet />
         </main>
       </div>

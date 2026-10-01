@@ -457,9 +457,9 @@ export const InvoiceListPage = () => {
               <Eye className="w-4 h-4" />
             </button>
             <button
-              onClick={() => navigate(`/invoices/${row._id || row.id}/print`)}
+              onClick={() => window.open(`/invoices/${row._id || row.id}/print`, '_blank')}
               className="p-1.5 text-slate-600 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition"
-              title="Print Tax Invoice"
+              title="Print / Save as PDF"
             >
               <Printer className="w-4 h-4" />
             </button>

@@ -9,6 +9,7 @@ export const adminService = {
 
   // Company Profile
   getCompany: () => apiClient.get('/admin/company'),
+  getCompanyProfile: () => apiClient.get('/admin/company'),
   updateCompany: (data) => apiClient.put('/admin/company', data),
 
   // Branches

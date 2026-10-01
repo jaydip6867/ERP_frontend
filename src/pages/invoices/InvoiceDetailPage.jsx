@@ -108,10 +108,12 @@ export const InvoiceDetailPage = () => {
 
             <Link
               to={`/invoices/${id}/print`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-semibold rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
             >
               <Printer className="w-4 h-4 text-slate-600" />
-              Print / PDF
+              Print / Save as PDF
             </Link>
 
             {invoice.e_invoice?.status !== 'generated' && (
