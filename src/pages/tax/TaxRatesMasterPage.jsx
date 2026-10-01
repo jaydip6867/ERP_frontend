@@ -35,7 +35,12 @@ export const TaxRatesMasterPage = () => {
     try {
       setLoading(true);
       const res = await taxService.getTaxRates();
-      setRates(res.data?.data || []);
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.data)
+        ? res.data.data
+        : [];
+      setRates(list);
     } catch (err) {
       console.error('Failed to load tax rates:', err);
     } finally {

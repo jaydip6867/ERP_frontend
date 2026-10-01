@@ -22,7 +22,7 @@ export const ItcRegisterPage = () => {
     try {
       setLoading(true);
       const res = await taxService.getItcRegister({ startDate, endDate });
-      setData(res.data?.data || null);
+      setData(res.data?.data || res.data || null);
     } catch (err) {
       console.error('Failed to fetch ITC Register:', err);
     } finally {

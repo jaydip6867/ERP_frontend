@@ -20,7 +20,7 @@ export const TaxLedgerPage = () => {
     try {
       setLoading(true);
       const res = await taxService.getTaxLedger();
-      setLedger(res.data?.data || null);
+      setLedger(res.data?.data || res.data || null);
     } catch (err) {
       console.error('Failed to load tax ledger summary:', err);
     } finally {
