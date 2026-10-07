@@ -19,9 +19,12 @@ export const ProductsListPage = () => {
   // Lookups
   const [lookups, setLookups] = useState({ categories: [], brands: [], uoms: [], hsns: [], productTypes: [] });
 
-  // Modal
+  // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [viewingProduct, setViewingProduct] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     product_name: '',
     sku: '',
@@ -67,7 +70,8 @@ export const ProductsListPage = () => {
         product_type: typeFilter || undefined,
         status: statusFilter || undefined,
       });
-      setProducts(res.data || []);
+      const prodsList = Array.isArray(res.data) ? res.data : (res.data?.products || []);
+      setProducts(prodsList);
       if (res.meta) {
         setPagination({
           page: res.meta.page,
@@ -81,6 +85,11 @@ export const ProductsListPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenView = (p) => {
+    setViewingProduct(p);
+    setIsViewModalOpen(true);
   };
 
   const handleOpenCreate = () => {
@@ -104,6 +113,7 @@ export const ProductsListPage = () => {
   };
 
   const handleOpenEdit = (p) => {
+    setIsViewModalOpen(false);
     setEditingProduct(p);
     setFormData({
       product_name: p.product_name,
@@ -121,6 +131,18 @@ export const ProductsListPage = () => {
       status: p.status || 'active',
     });
     setIsModalOpen(true);
+  };
+
+  const handleDeleteProduct = async (p) => {
+    if (!window.confirm(`Are you sure you want to delete product "${p.product_name}" (${p.sku})?`)) {
+      return;
+    }
+    try {
+      await productService.deleteProduct(p._id || p.id);
+      loadProducts(pagination.page);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete product');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -264,13 +286,13 @@ export const ProductsListPage = () => {
         loading={loading}
         pagination={pagination}
         onPageChange={(page) => loadProducts(page)}
-        onRowClick={(row) => handleOpenEdit(row)}
+        onRowClick={(row) => handleOpenView(row)}
         actions={(row) => (
           <div className="flex items-center gap-1 justify-end">
             <button
-              onClick={() => handleOpenEdit(row)}
+              onClick={() => handleOpenView(row)}
               className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
-              title="View / Edit Product Details"
+              title="View Product Details"
             >
               <Eye className="w-4 h-4" />
             </button>
@@ -280,6 +302,13 @@ export const ProductsListPage = () => {
               title="Edit Product"
             >
               <Edit2 className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleDeleteProduct(row)}
+              className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+              title="Delete Product"
+            >
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         )}
@@ -464,20 +493,150 @@ export const ProductsListPage = () => {
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg"
+              className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg"
+              className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg cursor-pointer"
             >
               {saving ? 'Saving...' : editingProduct ? 'Update Product' : 'Create Product'}
             </button>
           </div>
         </form>
       </Modal>
+
+      {/* Read-Only Product View Details Modal */}
+      {viewingProduct && (
+        <Modal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title={`Product Details: ${viewingProduct.product_name}`}
+          maxWidth="max-w-3xl"
+        >
+          <div className="space-y-5">
+            {/* Header / Summary Card */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start justify-between">
+              <div>
+                <h4 className="text-base font-bold text-slate-900">{viewingProduct.product_name}</h4>
+                <div className="flex items-center gap-2 mt-1 font-mono text-xs text-slate-600">
+                  <span className="font-semibold text-indigo-700">{viewingProduct.product_code}</span>
+                  <span>•</span>
+                  <span>SKU: {viewingProduct.sku}</span>
+                </div>
+              </div>
+              <StatusBadge status={viewingProduct.status || 'active'} />
+            </div>
+
+            {/* Category & Specifications */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-white rounded-xl border border-slate-100 shadow-xs">
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Category</span>
+                <span className="text-sm font-medium text-slate-900 mt-0.5 block">
+                  {viewingProduct.category_id?.category_name || 'General'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Brand</span>
+                <span className="text-sm font-medium text-slate-900 mt-0.5 block">
+                  {viewingProduct.brand_id?.brand_name || 'Generic / In-house'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Product Type</span>
+                <span className="text-sm font-medium text-slate-900 capitalize mt-0.5 block">
+                  {viewingProduct.product_type?.replace('_', ' ') || 'Finished Good'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Unit of Measure</span>
+                <span className="text-sm font-medium text-slate-900 mt-0.5 block">
+                  {viewingProduct.uom_id?.uom_name || 'Pieces'} ({viewingProduct.uom_id?.uom_code || 'PCS'})
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">HSN / SAC Code</span>
+                <span className="text-sm font-mono font-medium text-slate-900 mt-0.5 block">
+                  {viewingProduct.hsn_id?.hsn_code || 'N/A'}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">GST Rate</span>
+                <span className="text-sm font-semibold text-slate-900 mt-0.5 block">
+                  {viewingProduct.gst_rate ?? 18}%
+                </span>
+              </div>
+            </div>
+
+            {/* Pricing & Valuation */}
+            <div className="grid grid-cols-3 gap-4 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100">
+              <div>
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Selling Rate (MSRP)</span>
+                <span className="text-lg font-bold text-slate-900 mt-0.5 block">
+                  ₹{(viewingProduct.selling_rate || 0).toLocaleString()}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Purchase Rate (Cost)</span>
+                <span className="text-lg font-bold text-slate-700 mt-0.5 block">
+                  ₹{(viewingProduct.purchase_rate || 0).toLocaleString()}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Gross Margin</span>
+                <span className="text-lg font-bold text-emerald-700 mt-0.5 block">
+                  {viewingProduct.selling_rate
+                    ? `${Math.round(((viewingProduct.selling_rate - (viewingProduct.purchase_rate || 0)) / viewingProduct.selling_rate) * 100)}%`
+                    : '—'}
+                </span>
+              </div>
+            </div>
+
+            {/* Inventory Status */}
+            <div className="grid grid-cols-3 gap-4 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
+              <div>
+                <span className="text-xs text-slate-500 font-medium block">Current Physical Stock</span>
+                <span className="text-xl font-bold font-mono text-slate-900 mt-1 block">
+                  {viewingProduct.current_stock ?? 0} {viewingProduct.uom_id?.uom_code || 'PCS'}
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 font-medium block">Opening Stock</span>
+                <span className="text-xl font-bold font-mono text-slate-600 mt-1 block">
+                  {viewingProduct.opening_stock ?? 0}
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 font-medium block">Reorder Level Threshold</span>
+                <span className={`text-xl font-bold font-mono mt-1 block ${(viewingProduct.current_stock || 0) <= (viewingProduct.reorder_level || 0) ? 'text-rose-600' : 'text-slate-900'}`}>
+                  {viewingProduct.reorder_level ?? 10}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsViewModalOpen(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-lg cursor-pointer"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOpenEdit(viewingProduct)}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-1.5 cursor-pointer"
+              >
+                <Edit2 className="w-4 h-4" />
+                Edit Product
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

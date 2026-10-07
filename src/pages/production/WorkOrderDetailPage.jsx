@@ -66,7 +66,7 @@ export const WorkOrderDetailPage = () => {
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       <PageHeader
         title={`Work Order: ${wo.wo_number}`}
-        subtitle={`Scheduled on ${new Date(wo.wo_date).toLocaleDateString('en-IN')}`}
+        subtitle={wo.wo_date ? `Scheduled on ${new Date(wo.wo_date).toLocaleDateString('en-IN')}` : 'Production Shop Floor Order'}
         breadcrumbs={[
           { label: 'Dashboard', href: '/dashboard' },
           { label: 'Production', href: '/production' },
@@ -102,13 +102,13 @@ export const WorkOrderDetailPage = () => {
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <p className="text-xs font-semibold text-slate-500">Target Finished Good</p>
-          <p className="text-sm font-bold text-slate-900 mt-1">{wo.product_id?.product_name}</p>
+          <p className="text-sm font-bold text-slate-900 mt-1">{wo.product_id?.product_name || 'N/A'}</p>
           <p className="text-xs text-slate-500 font-mono">{wo.product_id?.product_code}</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <p className="text-xs font-semibold text-slate-500">BOM Reference</p>
-          <p className="text-sm font-semibold text-slate-900 mt-1">{wo.bom_id?.bom_name}</p>
-          <p className="text-xs text-slate-500">{wo.bom_id?.bom_number} (v{wo.bom_id?.version})</p>
+          <p className="text-sm font-semibold text-slate-900 mt-1">{wo.bom_id?.bom_name || 'BOM'}</p>
+          <p className="text-xs text-slate-500">{wo.bom_id?.bom_number} (v{wo.bom_id?.version || '1.0'})</p>
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <p className="text-xs font-semibold text-slate-500">Production Progress</p>
@@ -135,21 +135,24 @@ export const WorkOrderDetailPage = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-xs font-mono">
-            {wo.bom_id?.items?.map((it, idx) => (
-              <tr key={idx} className="hover:bg-slate-50">
-                <td className="py-3 px-4 font-sans">
-                  <p className="font-semibold text-slate-900">{it.product_id?.product_name || 'Component'}</p>
-                  <p className="text-xs font-mono text-slate-500">{it.product_id?.product_code}</p>
-                </td>
-                <td className="py-3 px-3 text-center">{it.quantity}</td>
-                <td className="py-3 px-3 text-center font-bold text-indigo-700">
-                  {it.quantity * wo.planned_qty}
-                </td>
-                <td className="py-3 px-3 text-center font-bold text-emerald-700">
-                  {it.product_id?.current_stock || 0}
-                </td>
-              </tr>
-            ))}
+            {wo.bom_id?.items?.map((it, idx) => {
+              const comp = it.product_id || it.item_product_id;
+              return (
+                <tr key={idx} className="hover:bg-slate-50">
+                  <td className="py-3 px-4 font-sans">
+                    <p className="font-semibold text-slate-900">{comp?.product_name || 'Component'}</p>
+                    <p className="text-xs font-mono text-slate-500">{comp?.product_code}</p>
+                  </td>
+                  <td className="py-3 px-3 text-center">{it.quantity}</td>
+                  <td className="py-3 px-3 text-center font-bold text-indigo-700">
+                    {it.quantity * wo.planned_qty}
+                  </td>
+                  <td className="py-3 px-3 text-center font-bold text-emerald-700">
+                    {comp?.current_stock || 0}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

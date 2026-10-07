@@ -27,7 +27,8 @@ export const StockSummaryPage = () => {
         search,
         low_stock: lowStockFilter || undefined,
       });
-      setItems(res.data?.items || []);
+      const summaryItems = Array.isArray(res.data) ? res.data : (res.data?.items || []);
+      setItems(summaryItems);
       if (res.meta) {
         setPagination({
           page: res.meta.page,

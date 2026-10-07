@@ -28,7 +28,8 @@ export const StockLedgerPage = () => {
         transaction_type: typeFilter || undefined,
         product_id: initialProductId || undefined,
       });
-      setEntries(res.data?.entries || []);
+      const ledgerEntries = Array.isArray(res.data) ? res.data : (res.data?.entries || []);
+      setEntries(ledgerEntries);
       if (res.meta) {
         setPagination({
           page: res.meta.page,
@@ -62,7 +63,7 @@ export const StockLedgerPage = () => {
     {
       header: 'Date & Time',
       key: 'transaction_date',
-      render: (dt) => new Date(dt).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }),
+      render: (dt) => (dt ? new Date(dt).toLocaleString('en-IN') : '—'),
     },
     {
       header: 'Type',

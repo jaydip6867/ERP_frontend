@@ -78,6 +78,193 @@ const navigationItems = [
     icon: LayoutDashboard,
     module: 'dashboard',
   },
+
+  // 1. Procurement & Purchasing
+  {
+    header: 'Procurement & Purchasing',
+  },
+  {
+    name: 'Purchase Dashboard',
+    path: '/purchase',
+    icon: ShoppingBag,
+    module: 'procurement',
+  },
+  {
+    name: 'Suppliers Directory',
+    path: '/purchase/suppliers',
+    icon: Building2,
+    module: 'procurement',
+  },
+  {
+    name: 'Purchase Orders',
+    path: '/purchase/orders',
+    icon: FileText,
+    module: 'procurement',
+  },
+  {
+    name: 'Goods Receipts (GRN)',
+    path: '/purchase/grn',
+    icon: PackageCheck,
+    module: 'procurement',
+  },
+  {
+    name: 'Supplier Invoices',
+    path: '/purchase/invoices',
+    icon: Receipt,
+    module: 'procurement',
+  },
+
+  // 2. Inventory & Operations
+  {
+    header: 'Inventory & Operations',
+  },
+  {
+    name: 'Inventory Dashboard',
+    path: '/inventory',
+    icon: Boxes,
+    module: 'inventory',
+  },
+  {
+    name: 'Stock Summary',
+    path: '/inventory/summary',
+    icon: Layers,
+    module: 'inventory',
+  },
+  {
+    name: 'Stock Ledger',
+    path: '/inventory/ledger',
+    icon: History,
+    module: 'inventory',
+  },
+  {
+    name: 'Stock Transfers',
+    path: '/inventory/transfers',
+    icon: GitBranch,
+    module: 'inventory',
+  },
+  {
+    name: 'Batches & Expiry',
+    path: '/inventory/batches',
+    icon: Hash,
+    module: 'inventory',
+  },
+  {
+    name: 'Product Catalog',
+    path: '/products',
+    icon: Package,
+    module: 'inventory',
+  },
+  {
+    name: 'Bill of Materials (BOM)',
+    path: '/products/bom',
+    icon: Calculator,
+    module: 'inventory',
+  },
+
+  // 3. Manufacturing & Operations
+  {
+    header: 'Manufacturing & Operations',
+  },
+  {
+    name: 'Operations Command',
+    path: '/operations/dashboard',
+    icon: Factory,
+    module: 'operations',
+    badge: 'Ops',
+  },
+  {
+    name: 'Work Orders',
+    path: '/production/work-orders',
+    icon: Factory,
+    module: 'production',
+  },
+  {
+    name: 'Quality Inspections',
+    path: '/qc/inspections',
+    icon: CheckSquare,
+    module: 'quality',
+  },
+  {
+    name: 'Supply Chain (S&OP)',
+    path: '/operations/supply-chain',
+    icon: Layers,
+    module: 'operations',
+  },
+  {
+    name: 'Product Merchandising',
+    path: '/operations/merchandising',
+    icon: Package,
+    module: 'operations',
+  },
+  {
+    name: 'Subcontractor & Mill Network',
+    path: '/operations/vendors',
+    icon: Building2,
+    module: 'operations',
+  },
+  {
+    name: 'Printing Workstation',
+    path: '/operations/printing',
+    icon: Printer,
+    module: 'operations',
+  },
+  {
+    name: 'Embroidery Workstation',
+    path: '/operations/embroidery',
+    icon: Scissors,
+    module: 'operations',
+  },
+  {
+    name: 'Finishing & Packaging',
+    path: '/operations/packing',
+    icon: PackageCheck,
+    module: 'operations',
+  },
+  {
+    name: 'Outbound Logistics',
+    path: '/operations/logistics',
+    icon: Truck,
+    module: 'operations',
+  },
+  {
+    name: 'R&D Innovation Hub',
+    path: '/rnd/dashboard',
+    icon: Microscope,
+    module: 'rnd',
+    badge: 'NPD',
+  },
+  {
+    name: 'NPD Stage-Gate Projects',
+    path: '/rnd/product-development',
+    icon: Beaker,
+    module: 'rnd',
+  },
+  {
+    name: 'Prototype Lab Samples',
+    path: '/rnd/samples',
+    icon: Boxes,
+    module: 'rnd',
+  },
+  {
+    name: 'Quality Lab Testing',
+    path: '/rnd/testing',
+    icon: CheckSquare,
+    module: 'rnd',
+  },
+  {
+    name: 'Product Kaizen (CIP)',
+    path: '/rnd/improvements',
+    icon: TrendingUp,
+    module: 'rnd',
+  },
+  {
+    name: '8D Problem Solving',
+    path: '/rnd/problem-solving',
+    icon: ShieldAlert,
+    module: 'rnd',
+  },
+
+  // 4. Commercial & Sales
   {
     header: 'Commercial & Sales',
   },
@@ -137,96 +324,31 @@ const navigationItems = [
     module: 'sales',
     badge: 'POS',
   },
+
+  // 5. Customer Service & CAPA
   {
-    header: 'Procurement & Purchasing',
+    header: 'Customer Service & CAPA',
   },
   {
-    name: 'Purchase Dashboard',
-    path: '/purchase',
-    icon: ShoppingBag,
-    module: 'procurement',
+    name: 'Helpdesk Tickets',
+    path: '/support/tickets',
+    icon: LifeBuoy,
+    module: 'support',
   },
   {
-    name: 'Suppliers Directory',
-    path: '/purchase/suppliers',
-    icon: Building2,
-    module: 'procurement',
+    name: 'Root Cause & CAPA',
+    path: '/support/capa',
+    icon: ShieldAlert,
+    module: 'support',
   },
   {
-    name: 'Purchase Orders',
-    path: '/purchase/orders',
-    icon: FileText,
-    module: 'procurement',
+    name: 'Feedback & NPS',
+    path: '/support/feedback',
+    icon: Award,
+    module: 'support',
   },
-  {
-    name: 'Goods Receipts (GRN)',
-    path: '/purchase/grn',
-    icon: PackageCheck,
-    module: 'procurement',
-  },
-  {
-    name: 'Supplier Invoices',
-    path: '/purchase/invoices',
-    icon: Receipt,
-    module: 'procurement',
-  },
-  {
-    header: 'Inventory & Operations',
-  },
-  {
-    name: 'Inventory Dashboard',
-    path: '/inventory',
-    icon: Boxes,
-    module: 'inventory',
-  },
-  {
-    name: 'Stock Summary',
-    path: '/inventory/summary',
-    icon: Layers,
-    module: 'inventory',
-  },
-  {
-    name: 'Stock Ledger',
-    path: '/inventory/ledger',
-    icon: History,
-    module: 'inventory',
-  },
-  {
-    name: 'Stock Transfers',
-    path: '/inventory/transfers',
-    icon: GitBranch,
-    module: 'inventory',
-  },
-  {
-    name: 'Batches & Expiry',
-    path: '/inventory/batches',
-    icon: Hash,
-    module: 'inventory',
-  },
-  {
-    name: 'Product Catalog',
-    path: '/products',
-    icon: Package,
-    module: 'inventory',
-  },
-  {
-    name: 'Bill of Materials (BOM)',
-    path: '/products/bom',
-    icon: Calculator,
-    module: 'inventory',
-  },
-  {
-    name: 'Work Orders',
-    path: '/production/work-orders',
-    icon: Factory,
-    module: 'production',
-  },
-  {
-    name: 'Quality Inspections',
-    path: '/qc/inspections',
-    icon: CheckSquare,
-    module: 'quality',
-  },
+
+  // 6. Finance & GST Compliance
   {
     header: 'Finance & GST Compliance',
   },
@@ -273,6 +395,8 @@ const navigationItems = [
     icon: Tag,
     module: 'finance',
   },
+
+  // 7. General Ledger & Accounts
   {
     header: 'General Ledger & Accounts',
   },
@@ -325,6 +449,8 @@ const navigationItems = [
     module: 'finance',
     badge: 'GAAP',
   },
+
+  // 8. Expenses & Owner Capital
   {
     header: 'Expenses & Owner Capital',
   },
@@ -353,123 +479,10 @@ const navigationItems = [
     module: 'finance',
     badge: 'Formula',
   },
+
+  // 9. Account & Security
   {
-    header: 'Customer Service & CAPA',
-  },
-  {
-    name: 'Helpdesk Tickets',
-    path: '/support/tickets',
-    icon: LifeBuoy,
-    module: 'support',
-  },
-  {
-    name: 'Root Cause & CAPA',
-    path: '/support/capa',
-    icon: ShieldAlert,
-    module: 'support',
-  },
-  {
-    name: 'Feedback & NPS',
-    path: '/support/feedback',
-    icon: Award,
-    module: 'support',
-  },
-  {
-    header: 'Commercial Intelligence & Growth',
-  },
-  {
-    name: 'Repeat Orders Schedule',
-    path: '/intelligence/repeat-orders',
-    icon: Clock,
-    module: 'sales',
-    badge: 'Predict',
-  },
-  {
-    name: 'Upsell & Cross-sell',
-    path: '/intelligence/upsell',
-    icon: Zap,
-    module: 'sales',
-  },
-  {
-    name: 'Marketing Campaigns',
-    path: '/marketing/campaigns',
-    icon: Target,
-    module: 'marketing',
-    badge: 'ROI',
-  },
-  {
-    header: 'Performance & Profitability',
-  },
-  {
-    name: 'Targets & Goals',
-    path: '/performance/targets',
-    icon: Target,
-    module: 'reports',
-  },
-  {
-    name: 'Sales Leaderboard',
-    path: '/performance/leaderboard',
-    icon: Trophy,
-    module: 'reports',
-  },
-  {
-    name: 'Net Profitability Engine',
-    path: '/profitability',
-    icon: TrendingUp,
-    module: 'finance',
-    badge: '9-Factor',
-  },
-  {
-    name: 'Demand Forecasts',
-    path: '/profitability/forecasts',
-    icon: Sparkles,
-    module: 'reports',
-  },
-  {
-    header: 'Executive & Cockpits',
-  },
-  {
-    name: 'CEO Cockpit',
-    path: '/executive/ceo',
-    icon: LayoutDashboard,
-    module: 'dashboard',
-    badge: 'Exec',
-  },
-  {
-    name: 'Founder Decisions',
-    path: '/executive/founder',
-    icon: ShieldCheck,
-    module: 'dashboard',
-  },
-  {
-    name: 'Assistant Agenda',
-    path: '/executive/assistant',
-    icon: CheckSquare,
-    module: 'dashboard',
-  },
-  {
-    header: 'Productivity & Collaboration',
-  },
-  {
-    name: 'Meetings & MOM',
-    path: '/productivity/meetings',
-    icon: Users,
-    module: 'dashboard',
-  },
-  {
-    name: 'Task Kanban',
-    path: '/productivity/tasks',
-    icon: Kanban,
-    module: 'dashboard',
-  },
-  {
-    name: 'Calendar',
-    path: '/productivity/calendar',
-    icon: CalendarIcon,
-    module: 'dashboard',
-  },
-  {
-    header: 'Administration & System',
+    header: 'Account & Security',
   },
   {
     name: 'Users Management',
@@ -485,124 +498,25 @@ const navigationItems = [
     badge: 'RBAC',
   },
   {
-    name: 'Company Profile',
-    path: '/admin/company',
-    icon: Building2,
-    module: 'settings',
-  },
-  {
-    name: 'Branches & Warehouses',
-    path: '/admin/locations',
-    icon: GitBranch,
-    module: 'settings',
-  },
-  {
-    name: 'Number Series',
-    path: '/admin/number-series',
-    icon: Hash,
-    module: 'settings',
-  },
-  {
     name: 'Audit Trail & Compliance',
     path: '/admin/audit-logs',
     icon: History,
     module: 'settings',
   },
   {
-    name: 'System Settings',
-    path: '/admin/settings',
-    icon: Settings,
-    module: 'settings',
+    name: 'My Profile',
+    path: '/profile',
+    icon: User,
   },
   {
-    name: 'System Health',
-    path: '/health',
-    icon: Activity,
-    badge: 'Live',
+    name: 'Change Password',
+    path: '/change-password',
+    icon: Key,
   },
+
+  // 10. Human Resources (HR)
   {
-    header: 'Executive C-Suite Cockpits',
-  },
-  {
-    name: 'Founder Sovereign Cockpit',
-    path: '/dashboards/founder',
-    icon: Crown,
-    module: 'dashboards',
-    badge: 'Board',
-  },
-  {
-    name: 'CEO Command Cockpit',
-    path: '/dashboards/ceo',
-    icon: LayoutDashboard,
-    module: 'dashboards',
-    badge: 'CEO',
-  },
-  {
-    name: 'CRO Revenue Cockpit',
-    path: '/dashboards/cro',
-    icon: TrendingUp,
-    module: 'dashboards',
-  },
-  {
-    name: 'CMO Brand Cockpit',
-    path: '/dashboards/cmo',
-    icon: Target,
-    module: 'dashboards',
-  },
-  {
-    name: 'COO Operations Cockpit',
-    path: '/dashboards/coo',
-    icon: Layers,
-    module: 'dashboards',
-  },
-  {
-    name: 'CFO Treasury Cockpit',
-    path: '/dashboards/cfo',
-    icon: DollarSign,
-    module: 'dashboards',
-  },
-  {
-    name: 'CHRO People Cockpit',
-    path: '/dashboards/chro',
-    icon: Heart,
-    module: 'dashboards',
-  },
-  {
-    name: 'CTO Tech Cockpit',
-    path: '/dashboards/cto',
-    icon: Cpu,
-    module: 'dashboards',
-  },
-  {
-    name: 'R&D Innovation Cockpit',
-    path: '/dashboards/rnd',
-    icon: Microscope,
-    module: 'dashboards',
-  },
-  {
-    header: 'Organization Architecture',
-  },
-  {
-    name: 'Organization Tree',
-    path: '/organization/tree',
-    icon: GitBranch,
-    module: 'organization',
-    badge: 'Chart',
-  },
-  {
-    name: 'Departments',
-    path: '/organization/departments',
-    icon: Building2,
-    module: 'organization',
-  },
-  {
-    name: 'Positions & Designations',
-    path: '/organization/positions',
-    icon: Briefcase,
-    module: 'organization',
-  },
-  {
-    header: 'Human Resources (HR) Suite',
+    header: 'Human Resources (HR)',
   },
   {
     name: 'HR Command Dashboard',
@@ -702,8 +616,69 @@ const navigationItems = [
     icon: FileText,
     module: 'hr',
   },
+
+  // 11. Organization Architecture
   {
-    header: 'Technology & Automation Suite',
+    header: 'Organization Architecture',
+  },
+  {
+    name: 'Organization Tree',
+    path: '/organization/tree',
+    icon: GitBranch,
+    module: 'organization',
+    badge: 'Chart',
+  },
+  {
+    name: 'Company Profile',
+    path: '/admin/company',
+    icon: Building2,
+    module: 'settings',
+  },
+  {
+    name: 'Branches & Warehouses',
+    path: '/admin/locations',
+    icon: GitBranch,
+    module: 'settings',
+  },
+  {
+    name: 'Departments',
+    path: '/organization/departments',
+    icon: Building2,
+    module: 'organization',
+  },
+  {
+    name: 'Positions & Designations',
+    path: '/organization/positions',
+    icon: Briefcase,
+    module: 'organization',
+  },
+
+  // 12. Administration & System
+  {
+    header: 'Administration & System',
+  },
+  {
+    name: 'Number Series',
+    path: '/admin/number-series',
+    icon: Hash,
+    module: 'settings',
+  },
+  {
+    name: 'System Settings',
+    path: '/admin/settings',
+    icon: Settings,
+    module: 'settings',
+  },
+  {
+    name: 'System Health',
+    path: '/health',
+    icon: Activity,
+    badge: 'Live',
+  },
+
+  // 13. Technology & Automation
+  {
+    header: 'Technology & Automation',
   },
   {
     name: 'Tech Operations Command',
@@ -773,15 +748,53 @@ const navigationItems = [
     icon: Server,
     module: 'technology',
   },
+
+  // 14. Productivity & Collaboration
   {
-    header: 'R&D & Product Innovation (NPD)',
+    header: 'Productivity & Collaboration',
   },
   {
-    name: 'R&D Innovation Hub',
-    path: '/rnd/dashboard',
-    icon: Microscope,
-    module: 'rnd',
-    badge: 'NPD',
+    name: 'Meetings & MOM',
+    path: '/productivity/meetings',
+    icon: Users,
+    module: 'dashboard',
+  },
+  {
+    name: 'Task Kanban',
+    path: '/productivity/tasks',
+    icon: Kanban,
+    module: 'dashboard',
+  },
+  {
+    name: 'Calendar',
+    path: '/productivity/calendar',
+    icon: CalendarIcon,
+    module: 'dashboard',
+  },
+
+  // 15. Commercial Intelligence & Analytics
+  {
+    header: 'Commercial Intelligence & Analytics',
+  },
+  {
+    name: 'Repeat Orders Schedule',
+    path: '/intelligence/repeat-orders',
+    icon: Clock,
+    module: 'sales',
+    badge: 'Predict',
+  },
+  {
+    name: 'Upsell & Cross-sell',
+    path: '/intelligence/upsell',
+    icon: Zap,
+    module: 'sales',
+  },
+  {
+    name: 'Marketing Campaigns',
+    path: '/marketing/campaigns',
+    icon: Target,
+    module: 'marketing',
+    badge: 'ROI',
   },
   {
     name: 'Market Research',
@@ -802,30 +815,6 @@ const navigationItems = [
     module: 'rnd',
   },
   {
-    name: 'NPD Stage-Gate Projects',
-    path: '/rnd/product-development',
-    icon: Beaker,
-    module: 'rnd',
-  },
-  {
-    name: 'Prototype Lab Samples',
-    path: '/rnd/samples',
-    icon: Boxes,
-    module: 'rnd',
-  },
-  {
-    name: 'Quality Lab Testing',
-    path: '/rnd/testing',
-    icon: CheckSquare,
-    module: 'rnd',
-  },
-  {
-    name: 'Product Kaizen (CIP)',
-    path: '/rnd/improvements',
-    icon: TrendingUp,
-    module: 'rnd',
-  },
-  {
     name: 'Customer Discovery',
     path: '/rnd/customer-research',
     icon: Users,
@@ -837,99 +826,142 @@ const navigationItems = [
     icon: Award,
     module: 'rnd',
   },
+
+  // 16. Performance & Profitability
   {
-    name: '8D Problem Solving',
-    path: '/rnd/problem-solving',
-    icon: ShieldAlert,
-    module: 'rnd',
+    header: 'Performance & Profitability',
   },
   {
-    header: 'Manufacturing & Operations',
+    name: 'Targets & Goals',
+    path: '/performance/targets',
+    icon: Target,
+    module: 'reports',
   },
   {
-    name: 'Operations Command',
-    path: '/operations/dashboard',
-    icon: Factory,
-    module: 'operations',
-    badge: 'Ops',
+    name: 'Sales Leaderboard',
+    path: '/performance/leaderboard',
+    icon: Trophy,
+    module: 'reports',
   },
   {
-    name: 'Supply Chain (S&OP)',
-    path: '/operations/supply-chain',
+    name: 'Net Profitability Engine',
+    path: '/profitability',
+    icon: TrendingUp,
+    module: 'finance',
+    badge: '9-Factor',
+  },
+  {
+    name: 'Demand Forecasts',
+    path: '/profitability/forecasts',
+    icon: Sparkles,
+    module: 'reports',
+  },
+
+  // 17. Executive & C-Suite Cockpits
+  {
+    header: 'Executive & C-Suite Cockpits',
+  },
+  {
+    name: 'Founder Sovereign Cockpit',
+    path: '/dashboards/founder',
+    icon: Crown,
+    module: 'dashboards',
+    badge: 'Board',
+  },
+  {
+    name: 'CEO Command Cockpit',
+    path: '/dashboards/ceo',
+    icon: LayoutDashboard,
+    module: 'dashboards',
+    badge: 'CEO',
+  },
+  {
+    name: 'CRO Revenue Cockpit',
+    path: '/dashboards/cro',
+    icon: TrendingUp,
+    module: 'dashboards',
+  },
+  {
+    name: 'CMO Brand Cockpit',
+    path: '/dashboards/cmo',
+    icon: Target,
+    module: 'dashboards',
+  },
+  {
+    name: 'COO Operations Cockpit',
+    path: '/dashboards/coo',
     icon: Layers,
-    module: 'operations',
+    module: 'dashboards',
   },
   {
-    name: 'Product Merchandising',
-    path: '/operations/merchandising',
-    icon: Package,
-    module: 'operations',
+    name: 'CFO Treasury Cockpit',
+    path: '/dashboards/cfo',
+    icon: DollarSign,
+    module: 'dashboards',
   },
   {
-    name: 'Subcontractor & Mill Network',
-    path: '/operations/vendors',
-    icon: Building2,
-    module: 'operations',
+    name: 'CHRO People Cockpit',
+    path: '/dashboards/chro',
+    icon: Heart,
+    module: 'dashboards',
   },
   {
-    name: 'Printing Workstation',
-    path: '/operations/printing',
-    icon: Printer,
-    module: 'operations',
+    name: 'CTO Tech Cockpit',
+    path: '/dashboards/cto',
+    icon: Cpu,
+    module: 'dashboards',
   },
   {
-    name: 'Embroidery Workstation',
-    path: '/operations/embroidery',
-    icon: Scissors,
-    module: 'operations',
+    name: 'R&D Innovation Cockpit',
+    path: '/dashboards/rnd',
+    icon: Microscope,
+    module: 'dashboards',
+  },
+
+  // 18. Executive Cockpits
+  {
+    header: 'Executive Cockpits',
   },
   {
-    name: 'Finishing & Packaging',
-    path: '/operations/packing',
-    icon: PackageCheck,
-    module: 'operations',
+    name: 'CEO Cockpit',
+    path: '/executive/ceo',
+    icon: LayoutDashboard,
+    module: 'dashboard',
+    badge: 'Exec',
   },
   {
-    name: 'Outbound Logistics',
-    path: '/operations/logistics',
-    icon: Truck,
-    module: 'operations',
+    name: 'Founder Decisions',
+    path: '/executive/founder',
+    icon: ShieldCheck,
+    module: 'dashboard',
   },
   {
-    header: 'Account & Security',
-  },
-  {
-    name: 'My Profile',
-    path: '/profile',
-    icon: User,
-  },
-  {
-    name: 'Change Password',
-    path: '/change-password',
-    icon: Key,
+    name: 'Assistant Agenda',
+    path: '/executive/assistant',
+    icon: CheckSquare,
+    module: 'dashboard',
   },
 ];
 
 const SECTION_ICONS = {
-  'Commercial & Sales': ShoppingCart,
   'Procurement & Purchasing': ShoppingBag,
   'Inventory & Operations': Boxes,
+  'Manufacturing & Operations': Factory,
+  'Commercial & Sales': ShoppingCart,
+  'Customer Service & CAPA': LifeBuoy,
   'Finance & GST Compliance': Receipt,
   'General Ledger & Accounts': Landmark,
   'Expenses & Owner Capital': DollarSign,
-  'Customer Service & CAPA': LifeBuoy,
-  'Commercial Intelligence & Growth': Zap,
-  'Performance & Profitability': Trophy,
-  'Executive & Cockpits': LayoutDashboard,
-  'Executive C-Suite Cockpits': Crown,
-  'Productivity & Collaboration': CheckSquare,
-  'Organization Architecture': GitBranch,
-  'Human Resources (HR) Suite': Users,
-  'Technology & Automation Suite': Cpu,
-  'R&D & Product Innovation (NPD)': Microscope,
-  'Manufacturing & Operations': Factory,
-  'Administration & System': Settings,
   'Account & Security': Shield,
+  'Human Resources (HR)': Users,
+  'Organization Architecture': GitBranch,
+  'Administration & System': Settings,
+  'Technology & Automation': Cpu,
+  'Productivity & Collaboration': CheckSquare,
+  'Commercial Intelligence & Analytics': Zap,
+  'Performance & Profitability': Trophy,
+  'Executive & C-Suite Cockpits': Crown,
+  'Executive Cockpits': LayoutDashboard,
 };
 
 export const MainLayout = () => {

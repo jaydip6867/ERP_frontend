@@ -35,8 +35,8 @@ export const StockTransfersPage = () => {
         adminService.getWarehouses(),
         productService.getProducts({ limit: 100 }),
       ]);
-      const whs = whRes.data || [];
-      const prods = prodRes.data?.products || prodRes.data || [];
+      const whs = Array.isArray(whRes.data) ? whRes.data : (whRes.data?.warehouses || []);
+      const prods = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data?.products || []);
       setWarehouses(whs);
       setProducts(prods);
       if (whs.length >= 2) {
@@ -56,7 +56,8 @@ export const StockTransfersPage = () => {
     try {
       setLoading(true);
       const res = await inventoryService.getTransfers({ page, limit: 10 });
-      setTransfers(res.data?.transfers || []);
+      const transferList = Array.isArray(res.data) ? res.data : (res.data?.transfers || []);
+      setTransfers(transferList);
       if (res.meta) {
         setPagination({
           page: res.meta.page,
@@ -106,7 +107,7 @@ export const StockTransfersPage = () => {
     {
       header: 'Date',
       key: 'transfer_date',
-      render: (dt) => new Date(dt).toLocaleDateString('en-IN'),
+      render: (dt) => (dt ? new Date(dt).toLocaleDateString('en-IN') : '—'),
     },
     {
       header: 'From Warehouse',

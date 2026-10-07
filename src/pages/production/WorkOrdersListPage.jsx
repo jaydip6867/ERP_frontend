@@ -41,11 +41,12 @@ export const WorkOrdersListPage = () => {
         productService.getBoms({ limit: 100 }),
       ]);
 
-      const prods = (prodRes.data?.products || prodRes.data || []).filter(
+      const rawProds = Array.isArray(prodRes.data) ? prodRes.data : (prodRes.data?.products || []);
+      const prods = rawProds.filter(
         (p) => p.product_type === 'finished_good' || p.product_type === 'semi_finished'
       );
-      const whs = whRes.data || [];
-      const bList = bomRes.data || [];
+      const whs = Array.isArray(whRes.data) ? whRes.data : (whRes.data?.warehouses || []);
+      const bList = Array.isArray(bomRes.data) ? bomRes.data : (bomRes.data?.boms || []);
 
       setProducts(prods);
       setWarehouses(whs);
@@ -70,7 +71,8 @@ export const WorkOrdersListPage = () => {
     try {
       setLoading(true);
       const res = await productionService.getWorkOrders({ page, limit: 10 });
-      setOrders(res.data?.orders || []);
+      const woList = Array.isArray(res.data) ? res.data : (res.data?.orders || []);
+      setOrders(woList);
       if (res.meta) {
         setPagination({
           page: res.meta.page,
@@ -106,7 +108,7 @@ export const WorkOrdersListPage = () => {
     {
       header: 'Date',
       key: 'wo_date',
-      render: (dt) => new Date(dt).toLocaleDateString('en-IN'),
+      render: (dt) => (dt ? new Date(dt).toLocaleDateString('en-IN') : '—'),
     },
     {
       header: 'Finished Product',
@@ -194,7 +196,8 @@ export const WorkOrdersListPage = () => {
                 className="w-full border border-slate-300 rounded-lg p-2 text-sm"
                 required
               >
-                {products.map((p) => (
+                {products.length === 0 && <option value="">No finished products found</option>}
+                {(Array.isArray(products) ? products : []).map((p) => (
                   <option key={p._id} value={p._id}>{p.product_name} ({p.product_code})</option>
                 ))}
               </select>
@@ -208,7 +211,8 @@ export const WorkOrdersListPage = () => {
                 className="w-full border border-slate-300 rounded-lg p-2 text-sm"
                 required
               >
-                {boms.map((b) => (
+                {boms.length === 0 && <option value="">No BOM found</option>}
+                {(Array.isArray(boms) ? boms : []).map((b) => (
                   <option key={b._id} value={b._id}>{b.bom_name} ({b.bom_number})</option>
                 ))}
               </select>
@@ -250,7 +254,8 @@ export const WorkOrdersListPage = () => {
                   className="w-full border border-slate-300 rounded-lg p-2 text-sm"
                   required
                 >
-                  {warehouses.map((w) => (
+                  {warehouses.length === 0 && <option value="">No warehouses found</option>}
+                  {(Array.isArray(warehouses) ? warehouses : []).map((w) => (
                     <option key={w._id} value={w._id}>{w.warehouse_name}</option>
                   ))}
                 </select>
@@ -263,7 +268,8 @@ export const WorkOrdersListPage = () => {
                   className="w-full border border-slate-300 rounded-lg p-2 text-sm"
                   required
                 >
-                  {warehouses.map((w) => (
+                  {warehouses.length === 0 && <option value="">No warehouses found</option>}
+                  {(Array.isArray(warehouses) ? warehouses : []).map((w) => (
                     <option key={w._id} value={w._id}>{w.warehouse_name}</option>
                   ))}
                 </select>

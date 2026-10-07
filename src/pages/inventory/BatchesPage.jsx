@@ -23,7 +23,8 @@ export const BatchesPage = () => {
         limit: 15,
         status: statusFilter || undefined,
       });
-      setBatches(res.data?.batches || []);
+      const batchList = Array.isArray(res.data) ? res.data : (res.data?.batches || []);
+      setBatches(batchList);
       if (res.meta) {
         setPagination({
           page: res.meta.page,

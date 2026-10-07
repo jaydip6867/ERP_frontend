@@ -67,7 +67,8 @@ export const QcInspectionsListPage = () => {
         inspection_type: typeFilter || undefined,
         outcome: outcomeFilter || undefined,
       });
-      setInspections(res.data?.inspections || []);
+      const list = Array.isArray(res.data) ? res.data : (res.data?.inspections || []);
+      setInspections(list);
       if (res.meta) {
         setPagination({
           page: res.meta.page,
