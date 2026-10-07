@@ -161,7 +161,7 @@ export const InvoicePrintPage = () => {
   const totalTax = (Number(invoice.cgst_total) || 0) + (Number(invoice.sgst_total) || 0) + (Number(invoice.igst_total) || 0);
 
   return (
-    <div className="min-h-screen bg-slate-100 print:bg-white py-6 px-4">
+    <div className="min-h-screen bg-slate-100 print:bg-white py-6 px-4 print:p-0 print:m-0 print:min-h-0">
       {/* Print Stylesheet Overrides */}
       <style>{`
         @media print {
@@ -169,22 +169,29 @@ export const InvoicePrintPage = () => {
             size: A4 portrait;
             margin: 8mm 10mm;
           }
-          body {
+          html, body, #root {
+            background: #ffffff !important;
             background-color: #ffffff !important;
             color: #0f172a !important;
+            margin: 0 !important;
+            padding: 0 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          .print-hidden {
+          /* Eliminate any transparent backdrops, overlays, blur curtains, and screen chrome */
+          header, aside, nav, footer, .print-hidden, [aria-hidden="true"], [class*="bg-slate-900/50"], [class*="backdrop-blur"], .fixed {
             display: none !important;
-          }
-          .print-page-break {
-            page-break-after: always;
+            visibility: hidden !important;
+            opacity: 0 !important;
           }
           .tax-invoice-box {
             border: 1.5px solid #0f172a !important;
             box-shadow: none !important;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
             padding: 12px !important;
+            opacity: 1 !important;
+            filter: none !important;
           }
         }
       `}</style>

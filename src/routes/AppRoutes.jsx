@@ -282,6 +282,18 @@ export const AppRoutes = () => {
         {/* Session Expired Notice Route */}
         <Route path="/session-expired" element={<SessionExpiredPage />} />
 
+        {/* Dedicated Full-Screen Print Canvas (Bypasses MainLayout sidebar and header) */}
+        <Route
+          path="/invoices/:id/print"
+          element={
+            <ProtectedRoute>
+              <PermissionGuard module="finance" action="can_view">
+                <InvoicePrintPage />
+              </PermissionGuard>
+            </ProtectedRoute>
+          }
+        />
+
         {/* Protected ERP Workspace Routes */}
         <Route
           path="/"
@@ -876,14 +888,6 @@ export const AppRoutes = () => {
             element={
               <PermissionGuard module="finance" action="can_view">
                 <InvoiceDetailPage />
-              </PermissionGuard>
-            }
-          />
-          <Route
-            path="invoices/:id/print"
-            element={
-              <PermissionGuard module="finance" action="can_view">
-                <InvoicePrintPage />
               </PermissionGuard>
             }
           />
