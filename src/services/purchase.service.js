@@ -21,7 +21,7 @@ export const purchaseService = {
   getGrns: (params) => apiClient.get('/purchase/grns', { params }),
   getGrnById: (id) => apiClient.get(`/purchase/grns/${id}`),
   createGrn: (data) => apiClient.post('/purchase/grns', data),
-  postGrnToStock: (id) => apiClient.put(`/purchase/grns/${id}/post-to-stock`),
+  postGrnToStock: (id, data) => apiClient.put(`/purchase/grns/${id}/post-to-stock`, data),
 
   // Invoices & Returns
   getInvoices: (params) => apiClient.get('/purchase/invoices', { params }),

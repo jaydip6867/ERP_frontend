@@ -1,12 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Star, Phone, Mail, Building, Eye, Edit2, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Users,
+  Plus,
+  Star,
+  Phone,
+  Mail,
+  Building,
+  Eye,
+  Edit2,
+  MapPin,
+  IndianRupee,
+  ShoppingBag,
+  FileText,
+  CreditCard,
+  ExternalLink,
+  Calendar,
+} from 'lucide-react';
 import { purchaseService } from '../../services/purchase.service';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { DataTable } from '../../components/shell/DataTable';
 import { FilterBar } from '../../components/shell/FilterBar';
 import { Modal } from '../../components/shell/Modal';
+import { StatusBadge } from '../../components/shell/StatusBadge';
 
 export const SuppliersListPage = () => {
+  const navigate = useNavigate();
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
@@ -14,6 +33,13 @@ export const SuppliersListPage = () => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
+
+  // Supplier dossier view modal states
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewSupplier, setViewSupplier] = useState(null);
+  const [supplierOrders, setSupplierOrders] = useState([]);
+  const [supplierPendingPayment, setSupplierPendingPayment] = useState(0);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   const [formData, setFormData] = useState({
     supplier_name: '',
@@ -90,6 +116,37 @@ export const SuppliersListPage = () => {
       },
     });
     setShowModal(true);
+  };
+
+  const handleOpenView = async (sup) => {
+    setViewSupplier(sup);
+    setShowViewModal(true);
+    setLoadingDetails(true);
+    setSupplierOrders([]);
+    setSupplierPendingPayment(sup.current_balance || 0);
+
+    try {
+      const res = await purchaseService.getSupplierById(sup._id || sup.id);
+      const data = res.data || {};
+      setViewSupplier((prev) => ({ ...prev, ...data }));
+      setSupplierOrders(data.purchase_orders || []);
+      setSupplierPendingPayment(data.pending_payment ?? sup.current_balance ?? 0);
+    } catch (err) {
+      console.error('Failed to load supplier details:', err);
+      try {
+        const poRes = await purchaseService.getOrders({ supplier_id: sup._id || sup.id, limit: 50 });
+        const orders = Array.isArray(poRes.data)
+          ? poRes.data
+          : Array.isArray(poRes.data?.orders)
+          ? poRes.data.orders
+          : [];
+        setSupplierOrders(orders);
+      } catch (poErr) {
+        console.error('Failed to fetch POs:', poErr);
+      }
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   const handleOpenEdit = (sup) => {
@@ -172,6 +229,15 @@ export const SuppliersListPage = () => {
       ),
     },
     {
+      header: 'Pending Balance',
+      key: 'current_balance',
+      render: (bal) => (
+        <span className={`text-xs font-semibold font-mono ${bal > 0 ? 'text-rose-600' : 'text-slate-600'}`}>
+          ₹{(bal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+        </span>
+      ),
+    },
+    {
       header: 'Rating',
       key: 'rating',
       render: (r) => (
@@ -240,13 +306,20 @@ export const SuppliersListPage = () => {
         loading={loading}
         pagination={pagination}
         onPageChange={(p) => setPagination((prev) => ({ ...prev, page: p }))}
-        onRowClick={(row) => handleOpenEdit(row)}
+        onRowClick={(row) => handleOpenView(row)}
         actions={(row) => (
           <div className="flex items-center gap-1 justify-end">
             <button
-              onClick={() => handleOpenEdit(row)}
+              onClick={() => handleOpenView(row)}
               className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
-              title="View / Edit Supplier"
+              title="View Supplier Dossier & POs"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => handleOpenEdit(row)}
+              className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+              title="Edit Supplier"
             >
               <Edit2 className="w-4 h-4" />
             </button>
@@ -441,6 +514,230 @@ export const SuppliersListPage = () => {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Supplier Dossier & Purchase Orders Modal */}
+      {showViewModal && viewSupplier && (
+        <Modal
+          isOpen={showViewModal}
+          onClose={() => setShowViewModal(false)}
+          title={`Supplier Dossier: ${viewSupplier.supplier_name}`}
+          subtitle={`Code: ${viewSupplier.supplier_code || 'N/A'} • GSTIN: ${viewSupplier.gstin || 'Unregistered'}`}
+          maxWidth="max-w-4xl"
+        >
+          <div className="space-y-6 text-sm">
+            {/* Top Cards: Financials & Overview */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-4">
+                <span className="text-xs font-semibold text-rose-600 flex items-center gap-1.5 uppercase tracking-wide">
+                  <IndianRupee className="w-4 h-4" /> Pending Payment
+                </span>
+                <p className="text-2xl font-black text-rose-700 mt-2 font-mono">
+                  ₹{Number(supplierPendingPayment || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-xs text-rose-600/80 mt-1">Outstanding vendor bills / balance</p>
+              </div>
+
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+                <span className="text-xs font-semibold text-indigo-600 flex items-center gap-1.5 uppercase tracking-wide">
+                  <ShoppingBag className="w-4 h-4" /> Purchase Orders
+                </span>
+                <p className="text-2xl font-black text-indigo-700 mt-2 font-mono">
+                  {supplierOrders.length} {supplierOrders.length === 1 ? 'Order' : 'Orders'}
+                </p>
+                <p className="text-xs text-indigo-600/80 mt-1">Linked POs created under this supplier</p>
+              </div>
+
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <span className="text-xs font-semibold text-slate-600 flex items-center gap-1.5 uppercase tracking-wide">
+                  <Star className="w-4 h-4 text-amber-500 fill-current" /> Rating & Terms
+                </span>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-lg font-bold text-slate-900">{viewSupplier.rating || 4}/5 ★</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 font-medium capitalize">
+                    {viewSupplier.category?.replace(/_/g, ' ') || 'Raw Materials'}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1 font-medium">{viewSupplier.payment_terms || 'Net 30 Days'}</p>
+              </div>
+            </div>
+
+            {/* Supplier Information Details */}
+            <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 space-y-3">
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <Building className="w-4 h-4 text-indigo-600" /> Supplier Profile & Contact Details
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                <div>
+                  <span className="text-slate-400 block font-medium">Contact Person</span>
+                  <p className="font-semibold text-slate-800 text-sm mt-0.5">{viewSupplier.contact_person || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium">Mobile / Phone</span>
+                  <p className="font-semibold text-slate-800 text-sm mt-0.5 flex items-center gap-1">
+                    <Phone className="w-3.5 h-3.5 text-slate-400" />
+                    {viewSupplier.mobile || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium">Email Address</span>
+                  <p className="font-semibold text-slate-800 text-sm mt-0.5 truncate flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    {viewSupplier.email || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium">PAN Number</span>
+                  <p className="font-mono font-semibold text-slate-800 text-sm mt-0.5">{viewSupplier.pan || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200/60 pt-3 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span className="text-slate-400 block font-medium flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400" /> Registered Facility Address
+                  </span>
+                  <p className="text-slate-700 mt-0.5">
+                    {viewSupplier.address?.address_line1 ? (
+                      <>
+                        {viewSupplier.address.address_line1}, {viewSupplier.address.city}, {viewSupplier.address.state} - {viewSupplier.address.pincode}
+                      </>
+                    ) : (
+                      'Address not configured'
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium flex items-center gap-1">
+                    <CreditCard className="w-3.5 h-3.5 text-slate-400" /> Bank Settlement Account
+                  </span>
+                  <p className="text-slate-700 mt-0.5 font-mono">
+                    {viewSupplier.bank_details?.bank_name ? (
+                      <>
+                        {viewSupplier.bank_details.bank_name} &bull; A/C: {viewSupplier.bank_details.account_number || 'N/A'} &bull; IFSC: {viewSupplier.bank_details.ifsc_code || 'N/A'}
+                      </>
+                    ) : (
+                      'Bank account details not specified'
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Purchase Orders List Section */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-indigo-600" />
+                  <h4 className="font-bold text-slate-900 text-sm">
+                    Purchase Orders under {viewSupplier.supplier_name}
+                  </h4>
+                  <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-indigo-100 text-indigo-700">
+                    {supplierOrders.length}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowViewModal(false);
+                    navigate('/purchase/orders/create');
+                  }}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-800"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Create PO
+                </button>
+              </div>
+
+              {loadingDetails ? (
+                <div className="p-8 text-center text-slate-500">
+                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-2 border-indigo-600 border-t-transparent mb-2" />
+                  <p className="text-xs">Loading purchase orders history...</p>
+                </div>
+              ) : supplierOrders.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 italic text-xs">
+                  No purchase orders created for this supplier yet.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-100/70 text-slate-600 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                      <tr>
+                        <th className="py-2.5 px-3">PO Number</th>
+                        <th className="py-2.5 px-3">Date</th>
+                        <th className="py-2.5 px-3">Items / Products</th>
+                        <th className="py-2.5 px-3 text-right">Grand Total</th>
+                        <th className="py-2.5 px-3 text-center">Status</th>
+                        <th className="py-2.5 px-3 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {supplierOrders.map((po) => (
+                        <tr key={po._id || po.id} className="hover:bg-slate-50 transition">
+                          <td className="py-2.5 px-3 font-mono font-bold text-indigo-600">
+                            {po.po_number}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-600">
+                            {po.po_date ? new Date(po.po_date).toLocaleDateString('en-IN') : '—'}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-700">
+                            {po.items?.length || 0} items
+                            {po.items?.[0]?.product_id?.product_name && (
+                              <span className="text-slate-400 text-[11px] block truncate max-w-[200px]">
+                                {po.items[0].product_id.product_name}
+                                {po.items.length > 1 ? ` +${po.items.length - 1} more` : ''}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900">
+                            ₹{Number(po.grand_total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <StatusBadge status={po.status} />
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowViewModal(false);
+                                navigate(`/purchase/orders/${po._id || po.id}`);
+                              }}
+                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-800 hover:underline cursor-pointer"
+                            >
+                              View <ExternalLink className="w-3 h-3" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowViewModal(false);
+                  handleOpenEdit(viewSupplier);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 transition cursor-pointer"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+                Edit Supplier Info
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowViewModal(false)}
+                className="px-5 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                Close Dossier
+              </button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

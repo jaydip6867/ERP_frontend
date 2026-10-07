@@ -107,13 +107,28 @@ export const GrnListPage = () => {
         onPageChange={(p) => setPagination((prev) => ({ ...prev, page: p }))}
         onRowClick={(row) => navigate(`/purchase/grn/${row._id || row.id}`)}
         actions={(row) => (
-          <button
-            onClick={() => navigate(`/purchase/grn/${row._id || row.id}`)}
-            className="p-1.5 text-slate-600 hover:text-indigo-600 rounded hover:bg-slate-100"
-            title="View Details"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1 justify-end">
+            {!row.stock_posted && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/purchase/grn/${row._id || row.id}`);
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer"
+                title="Accept & Post to Inventory"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                Post to Stock
+              </button>
+            )}
+            <button
+              onClick={() => navigate(`/purchase/grn/${row._id || row.id}`)}
+              className="p-1.5 text-slate-600 hover:text-indigo-600 rounded hover:bg-slate-100 cursor-pointer"
+              title="View Details"
+            >
+              <Eye className="w-4 h-4" />
+            </button>
+          </div>
         )}
       />
     </div>

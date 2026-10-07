@@ -25,7 +25,8 @@ export const DataTable = ({
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-      <div className="overflow-x-auto">
+      {/* Desktop Table View (md screens and up) */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
           <thead className="bg-slate-50 text-slate-700 font-semibold uppercase text-xs tracking-wider">
             <tr>
@@ -78,9 +79,71 @@ export const DataTable = ({
         </table>
       </div>
 
+      {/* Mobile Card View (screens smaller than md: 768px) */}
+      <div className="block md:hidden divide-y divide-slate-100 bg-slate-50/30">
+        {rows.length === 0 ? (
+          <div className="px-4 py-12 text-center text-slate-400 italic text-sm bg-white">
+            {emptyMessage}
+          </div>
+        ) : (
+          rows.map((row, rowIdx) => (
+            <div
+              key={row[rowKey] || row._id || row.id || rowIdx}
+              onClick={() => onRowClick && onRowClick(row)}
+              className={`p-4 bg-white transition-all space-y-2.5 ${
+                onRowClick ? 'cursor-pointer active:bg-indigo-50/60' : ''
+              }`}
+            >
+              {/* Primary Column / Card Header */}
+              {columns.length > 0 && (
+                <div className="pb-2 border-b border-slate-100 flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
+                      {columns[0].header}
+                    </span>
+                    <div className="text-sm font-semibold text-slate-900">
+                      {columns[0].render
+                        ? columns[0].render(row[columns[0].key], row, rowIdx)
+                        : row[columns[0].key] ?? '—'}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Remaining Columns as Key-Value Pairs */}
+              <div className="space-y-1.5 text-xs">
+                {columns.slice(1).map((col, cIdx) => (
+                  <div
+                    key={col.key || cIdx + 1}
+                    className="flex items-center justify-between py-1 px-1 rounded-sm gap-2"
+                  >
+                    <span className="font-semibold text-slate-500 text-[11px] shrink-0">
+                      {col.header}:
+                    </span>
+                    <div className={`text-right text-slate-800 ${col.cellClassName || ''}`}>
+                      {col.render ? col.render(row[col.key], row, rowIdx) : row[col.key] ?? '—'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Action Buttons for Mobile Card */}
+              {actions && (
+                <div
+                  className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {actions(row)}
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-600">
-          <div>
+        <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between px-4 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-600">
+          <div className="text-center sm:text-left">
             Showing <span className="font-semibold">{((pagination.page - 1) * pagination.limit) + 1}</span> to{' '}
             <span className="font-semibold">
               {Math.min(pagination.page * pagination.limit, pagination.total)}

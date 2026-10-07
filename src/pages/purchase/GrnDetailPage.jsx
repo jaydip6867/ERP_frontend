@@ -1,16 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { PackageCheck, ArrowLeft, CheckCircle2, ShieldCheck, Truck } from 'lucide-react';
+import {
+  PackageCheck,
+  ArrowLeft,
+  CheckCircle2,
+  ShieldCheck,
+  Truck,
+  Warehouse,
+  UserCheck,
+  AlertCircle,
+  FileText,
+} from 'lucide-react';
 import { purchaseService } from '../../services/purchase.service';
+import { adminService } from '../../services/admin.service';
+import { useAppStore } from '../../store/useAppStore';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { StatusBadge } from '../../components/shell/StatusBadge';
+import { Modal } from '../../components/shell/Modal';
 
 export const GrnDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const user = useAppStore((state) => state.user);
+
   const [grn, setGrn] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Warehouse selection & user posting modal states
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [warehouses, setWarehouses] = useState([]);
+  const [selectedWarehouse, setSelectedWarehouse] = useState('');
+  const [postRemarks, setPostRemarks] = useState('');
 
   useEffect(() => {
     if (id === 'new' || id === 'create') {
@@ -22,13 +43,31 @@ export const GrnDetailPage = () => {
       return;
     }
     loadGrn();
+    loadWarehouses();
   }, [id]);
+
+  const loadWarehouses = async () => {
+    try {
+      const res = await adminService.getWarehouses();
+      const list = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.warehouses)
+        ? res.data.warehouses
+        : [];
+      setWarehouses(list);
+    } catch (err) {
+      console.error('Failed to load warehouses:', err);
+    }
+  };
 
   const loadGrn = async () => {
     try {
       setLoading(true);
       const res = await purchaseService.getGrnById(id);
       setGrn(res.data);
+      if (res.data?.warehouse_id?._id || res.data?.warehouse_id) {
+        setSelectedWarehouse(res.data.warehouse_id?._id || res.data.warehouse_id);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -36,11 +75,31 @@ export const GrnDetailPage = () => {
     }
   };
 
-  const handlePostToStock = async () => {
+  const handleOpenPostModal = () => {
+    const defaultWh =
+      grn?.warehouse_id?._id ||
+      grn?.warehouse_id ||
+      (warehouses.length > 0 ? (warehouses[0]._id || warehouses[0].id) : '');
+    setSelectedWarehouse(defaultWh);
+    setPostRemarks('');
+    setIsPostModalOpen(true);
+  };
+
+  const handleConfirmPostToStock = async (e) => {
+    if (e) e.preventDefault();
+    if (!selectedWarehouse) {
+      alert('Please select the destination warehouse for this inventory inward.');
+      return;
+    }
+
     try {
       setActionLoading(true);
-      await purchaseService.postGrnToStock(id);
-      loadGrn();
+      await purchaseService.postGrnToStock(id, {
+        warehouse_id: selectedWarehouse,
+        remarks: postRemarks,
+      });
+      setIsPostModalOpen(false);
+      await loadGrn();
     } catch (err) {
       alert(err.response?.data?.message || 'Error posting GRN to inventory');
     } finally {
@@ -79,8 +138,8 @@ export const GrnDetailPage = () => {
             {!grn.stock_posted && (
               <button
                 disabled={actionLoading}
-                onClick={handlePostToStock}
-                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
+                onClick={handleOpenPostModal}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm cursor-pointer transition"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 {actionLoading ? 'Posting...' : 'Accept & Post to Inventory'}
@@ -146,6 +205,123 @@ export const GrnDetailPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Warehouse Assignment & User Record Modal */}
+      {isPostModalOpen && (
+        <Modal
+          isOpen={isPostModalOpen}
+          onClose={() => setIsPostModalOpen(false)}
+          title="Accept & Post GRN to Inventory"
+          subtitle={`GRN: ${grn.grn_number} • Supplier: ${grn.supplier_id?.supplier_name || 'N/A'}`}
+          maxWidth="max-w-2xl"
+        >
+          <form onSubmit={handleConfirmPostToStock} className="space-y-5 text-sm">
+            {/* Target Warehouse Selection */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                <Warehouse className="w-4 h-4 text-indigo-600" />
+                Select Destination Warehouse *
+              </label>
+              <select
+                required
+                value={selectedWarehouse}
+                onChange={(e) => setSelectedWarehouse(e.target.value)}
+                className="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-medium text-slate-800 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+              >
+                <option value="">-- Choose Target Warehouse --</option>
+                {warehouses.map((wh) => (
+                  <option key={wh._id || wh.id} value={wh._id || wh.id}>
+                    {wh.warehouse_name} ({wh.warehouse_code || 'WH'}) - {wh.city || wh.state || 'Primary'}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500 mt-1">
+                Material quantities and lot batches will be credited into this warehouse's stock ledger.
+              </p>
+            </div>
+
+            {/* Posting Officer / User Audit Box */}
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <UserCheck className="w-4 h-4 text-emerald-600" />
+                Posting Officer / Verified By
+              </span>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">{user?.full_name || 'Authorized Store User'}</p>
+                  <p className="text-xs text-slate-500">
+                    {user?.email || 'user@danzaerp.com'} &bull; Role:{' '}
+                    <span className="capitalize font-semibold text-slate-700">{user?.role || 'Store Keeper'}</span>
+                  </p>
+                </div>
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  Audit Stored
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 border-t border-slate-200/60 pt-1.5 mt-1">
+                Your user account record will be permanently linked to this stock posting and ledger entry.
+              </p>
+            </div>
+
+            {/* Goods Summary */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden">
+              <div className="bg-slate-100/60 px-3 py-2 border-b border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-700">
+                <span>Items Being Posted ({grn.items?.length || 0})</span>
+                <span>
+                  Total Accepted: {grn.items?.reduce((s, it) => s + (it.accepted_qty || it.received_qty || 0), 0)} units
+                </span>
+              </div>
+              <div className="max-h-40 overflow-y-auto divide-y divide-slate-100 text-xs">
+                {grn.items?.map((it, idx) => (
+                  <div key={idx} className="p-2.5 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-slate-800">{it.product_id?.product_name}</p>
+                      <p className="text-slate-400 font-mono text-[11px]">{it.product_id?.product_code}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-emerald-700">{it.accepted_qty || it.received_qty} units</span>
+                      <p className="text-[11px] font-mono text-slate-500">{it.batch_number || 'Auto-Lot'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Remarks / Inward Notes */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Storage Rack / Verification Remarks (Optional)
+              </label>
+              <textarea
+                rows={2}
+                placeholder="e.g. Inwarded to Aisle 3, Rack B-12. Verified physical condition and seal intact."
+                value={postRemarks}
+                onChange={(e) => setPostRemarks(e.target.value)}
+                className="w-full border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+              />
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsPostModalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={actionLoading}
+                className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition cursor-pointer disabled:opacity-50"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                {actionLoading ? 'Posting to Warehouse...' : 'Accept & Post to Inventory'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 };
