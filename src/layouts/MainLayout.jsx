@@ -59,6 +59,7 @@ import {
   Printer,
   Scissors,
   Crown,
+  BookOpen,
   Heart,
   MessageSquare,
 } from 'lucide-react';
