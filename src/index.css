@@ -45,3 +45,20 @@ body {
   scrollbar-color: #cbd5e1 transparent;
 }
 
+/* Global SVG & Icon Protection: Prevent SVGs from shrinking in tables, buttons, and flex containers */
+svg {
+  flex-shrink: 0 !important;
+}
+
+table svg,
+td svg,
+th svg,
+button svg,
+a svg,
+[role="button"] svg {
+  flex-shrink: 0 !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+

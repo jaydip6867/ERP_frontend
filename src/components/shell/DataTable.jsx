@@ -33,13 +33,13 @@ export const DataTable = ({
               {columns.map((col, idx) => (
                 <th
                   key={col.key || idx}
-                  className={`px-4 py-3.5 ${col.className || ''}`}
+                  className={`px-4 py-3.5 ${col.className || ''} [&_svg]:shrink-0`}
                   style={col.width ? { width: col.width } : {}}
                 >
                   {col.header}
                 </th>
               ))}
-              {actions && <th className="px-4 py-3.5 text-right">Actions</th>}
+              {actions && <th className="px-4 py-3.5 text-right whitespace-nowrap shrink-0 w-1">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-slate-600">
@@ -60,16 +60,18 @@ export const DataTable = ({
                   className={`hover:bg-indigo-50/40 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
                 >
                   {columns.map((col, cIdx) => (
-                    <td key={col.key || cIdx} className={`px-4 py-3 ${col.cellClassName || ''}`}>
+                    <td key={col.key || cIdx} className={`px-4 py-3 ${col.cellClassName || ''} [&_svg]:shrink-0`}>
                       {col.render ? col.render(row[col.key], row, rowIdx) : row[col.key] ?? '—'}
                     </td>
                   ))}
                   {actions && (
                     <td
-                      className="px-4 py-3 text-right space-x-2 whitespace-nowrap"
+                      className="px-4 py-3 text-right whitespace-nowrap shrink-0 w-1"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {actions(row)}
+                      <div className="flex items-center justify-end gap-1.5 shrink-0 [&_svg]:shrink-0 [&_button]:shrink-0">
+                        {actions(row)}
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -103,7 +105,7 @@ export const DataTable = ({
                       <span className="text-[9px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
                         {columns[0].header}
                       </span>
-                      <div className="text-xs font-bold text-slate-900 leading-snug">
+                      <div className="text-xs font-bold text-slate-900 leading-snug [&_svg]:shrink-0">
                         {columns[0].render
                           ? columns[0].render(row[columns[0].key], row, rowIdx)
                           : row[columns[0].key] ?? '—'}
@@ -127,7 +129,7 @@ export const DataTable = ({
                           <span className="text-[9px] uppercase font-semibold text-slate-400 truncate tracking-wide">
                             {col.header}
                           </span>
-                          <div className={`text-[11px] font-medium text-slate-800 truncate mt-0.5 ${col.cellClassName || ''}`}>
+                          <div className={`text-[11px] font-medium text-slate-800 truncate mt-0.5 [&_svg]:shrink-0 ${col.cellClassName || ''}`}>
                             {col.render ? col.render(row[col.key], row, rowIdx) : row[col.key] ?? '—'}
                           </div>
                         </div>
@@ -139,7 +141,7 @@ export const DataTable = ({
                 {/* Action Buttons for Mobile Card */}
                 {actions && (
                   <div
-                    className="pt-1.5 border-t border-slate-100 flex items-center justify-end gap-1.5 text-xs [&_button]:text-xs [&_button]:py-1 [&_button]:px-2 [&_svg]:w-3.5 [&_svg]:h-3.5"
+                    className="pt-1.5 border-t border-slate-100 flex items-center justify-end gap-1.5 text-xs shrink-0 [&_button]:text-xs [&_button]:py-1 [&_button]:px-2 [&_svg]:w-3.5 [&_svg]:h-3.5 [&_svg]:shrink-0 [&_button]:shrink-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {actions(row)}
