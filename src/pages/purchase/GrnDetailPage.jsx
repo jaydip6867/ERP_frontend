@@ -10,6 +10,12 @@ import {
   UserCheck,
   AlertCircle,
   FileText,
+  FileUp,
+  Image,
+  X,
+  ExternalLink,
+  Download,
+  Paperclip,
 } from 'lucide-react';
 import { purchaseService } from '../../services/purchase.service';
 import { adminService } from '../../services/admin.service';
@@ -32,6 +38,9 @@ export const GrnDetailPage = () => {
   const [warehouses, setWarehouses] = useState([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState('');
   const [postRemarks, setPostRemarks] = useState('');
+  const [attachmentPreview, setAttachmentPreview] = useState('');
+  const [attachmentName, setAttachmentName] = useState('');
+  const [attachmentType, setAttachmentType] = useState('');
 
   useEffect(() => {
     if (id === 'new' || id === 'create') {
@@ -82,7 +91,35 @@ export const GrnDetailPage = () => {
       (warehouses.length > 0 ? (warehouses[0]._id || warehouses[0].id) : '');
     setSelectedWarehouse(defaultWh);
     setPostRemarks('');
+    setAttachmentPreview('');
+    setAttachmentName('');
+    setAttachmentType('');
     setIsPostModalOpen(true);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert('File size exceeds 8MB limit. Please choose a smaller file.');
+      return;
+    }
+
+    setAttachmentName(file.name);
+    setAttachmentType(file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'));
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAttachmentPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveFile = () => {
+    setAttachmentPreview('');
+    setAttachmentName('');
+    setAttachmentType('');
   };
 
   const handleConfirmPostToStock = async (e) => {
@@ -97,6 +134,9 @@ export const GrnDetailPage = () => {
       await purchaseService.postGrnToStock(id, {
         warehouse_id: selectedWarehouse,
         remarks: postRemarks,
+        file_data: attachmentPreview || undefined,
+        attachment_name: attachmentName || undefined,
+        attachment_type: attachmentType || undefined,
       });
       setIsPostModalOpen(false);
       await loadGrn();
@@ -206,6 +246,74 @@ export const GrnDetailPage = () => {
         </table>
       </div>
 
+      {/* Attached Inward / QC Documents */}
+      {(grn.attachment_url || (grn.documents && grn.documents.length > 0)) && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+              <Paperclip className="w-4 h-4 text-brand" />
+              Attached Inward Proof / QC Document
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {grn.attachment_url && (
+              <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="p-2 bg-white rounded-lg border border-slate-200 flex-shrink-0">
+                    {grn.attachment_type?.includes('pdf') || grn.attachment_name?.toLowerCase().endsWith('.pdf') ? (
+                      <FileText className="w-5 h-5 text-rose-500" />
+                    ) : (
+                      <Image className="w-5 h-5 text-emerald-500" />
+                    )}
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-bold text-slate-800 truncate">{grn.attachment_name || 'Inward Document'}</p>
+                    <p className="text-[10px] text-slate-400 font-mono">Uploaded Document</p>
+                  </div>
+                </div>
+                <a
+                  href={grn.attachment_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand/40 shadow-2xs transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  View File
+                </a>
+              </div>
+            )}
+            {grn.documents?.filter((d) => d.file_url !== grn.attachment_url).map((doc, dIdx) => (
+              <div key={dIdx} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="p-2 bg-white rounded-lg border border-slate-200 flex-shrink-0">
+                    {doc.file_type?.includes('pdf') || doc.file_name?.toLowerCase().endsWith('.pdf') ? (
+                      <FileText className="w-5 h-5 text-rose-500" />
+                    ) : (
+                      <Image className="w-5 h-5 text-emerald-500" />
+                    )}
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-bold text-slate-800 truncate">{doc.file_name || 'Document'}</p>
+                    <p className="text-[10px] text-slate-400 font-mono">
+                      {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString('en-IN') : 'Uploaded'}
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href={doc.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand/40 shadow-2xs transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  View File
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Warehouse Assignment & User Record Modal */}
       {isPostModalOpen && (
         <Modal
@@ -219,14 +327,14 @@ export const GrnDetailPage = () => {
             {/* Target Warehouse Selection */}
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
-                <Warehouse className="w-4 h-4 text-indigo-600" />
+                <Warehouse className="w-4 h-4 text-brand" />
                 Select Destination Warehouse *
               </label>
               <select
                 required
                 value={selectedWarehouse}
                 onChange={(e) => setSelectedWarehouse(e.target.value)}
-                className="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-medium text-slate-800 bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                className="w-full border border-slate-300 rounded-xl p-2.5 text-sm font-medium text-slate-800 bg-white focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
               >
                 <option value="">-- Choose Target Warehouse --</option>
                 {warehouses.map((wh) => (
@@ -287,6 +395,57 @@ export const GrnDetailPage = () => {
               </div>
             </div>
 
+            {/* Document / PDF / Image Proof Upload */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                <Paperclip className="w-3.5 h-3.5 text-brand" />
+                Upload Inward Document / Vendor Challan / QC Proof (PDF or Image)
+              </label>
+              {!attachmentPreview ? (
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-brand/60 rounded-xl p-4 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition group">
+                  <div className="p-2.5 rounded-full bg-white shadow-xs border border-slate-200 group-hover:scale-105 transition">
+                    <FileUp className="w-5 h-5 text-brand" />
+                  </div>
+                  <span className="text-xs font-semibold text-slate-700 mt-2">
+                    Click to select file or drag &amp; drop
+                  </span>
+                  <span className="text-[11px] text-slate-400 mt-0.5">
+                    Supports PDF, PNG, JPG, JPEG, WEBP (Max 8MB)
+                  </span>
+                  <input
+                    type="file"
+                    accept=".pdf, image/png, image/jpeg, image/jpg, image/webp"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                </label>
+              ) : (
+                <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="p-2 bg-white rounded-lg border border-slate-200 flex-shrink-0">
+                      {attachmentType.includes('pdf') || attachmentName.toLowerCase().endsWith('.pdf') ? (
+                        <FileText className="w-5 h-5 text-rose-500" />
+                      ) : (
+                        <Image className="w-5 h-5 text-emerald-500" />
+                      )}
+                    </div>
+                    <div className="truncate">
+                      <p className="text-xs font-bold text-slate-800 truncate">{attachmentName}</p>
+                      <p className="text-[10px] text-slate-400 uppercase font-mono">{attachmentType || 'Attachment'}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveFile}
+                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer flex-shrink-0"
+                    title="Remove File"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Remarks / Inward Notes */}
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -297,7 +456,7 @@ export const GrnDetailPage = () => {
                 placeholder="e.g. Inwarded to Aisle 3, Rack B-12. Verified physical condition and seal intact."
                 value={postRemarks}
                 onChange={(e) => setPostRemarks(e.target.value)}
-                className="w-full border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
+                className="w-full border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800 focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none"
               />
             </div>
 

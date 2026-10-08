@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PackageCheck, Truck, Warehouse, Calendar, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
+import { PackageCheck, Truck, Warehouse, Calendar, AlertCircle, CheckCircle2, ArrowRight, FileUp, FileText, Image, Paperclip, X } from 'lucide-react';
 import { purchaseService } from '../../services/purchase.service';
 import { adminService } from '../../services/admin.service';
 import { Modal } from '../shell/Modal';
@@ -31,6 +31,9 @@ export const ConvertToGrnModal = ({
   const [driverName, setDriverName] = useState('');
   const [remarks, setRemarks] = useState('');
   const [items, setItems] = useState([]);
+  const [attachmentPreview, setAttachmentPreview] = useState('');
+  const [attachmentName, setAttachmentName] = useState('');
+  const [attachmentType, setAttachmentType] = useState('');
 
   // Load available warehouses
   useEffect(() => {
@@ -172,6 +175,31 @@ export const ConvertToGrnModal = ({
     );
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      alert('File size exceeds 8MB limit. Please choose a smaller file.');
+      return;
+    }
+
+    setAttachmentName(file.name);
+    setAttachmentType(file.type || (file.name.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'));
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setAttachmentPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveFile = () => {
+    setAttachmentPreview('');
+    setAttachmentName('');
+    setAttachmentType('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -205,6 +233,9 @@ export const ConvertToGrnModal = ({
         vehicle_number: vehicleNumber.trim(),
         driver_name: driverName.trim(),
         remarks: remarks.trim(),
+        file_data: attachmentPreview || undefined,
+        attachment_name: attachmentName || undefined,
+        attachment_type: attachmentType || undefined,
         items: validItems.map((it) => ({
           product_id: it.product_id,
           received_qty: Number(it.received_qty),
@@ -465,6 +496,57 @@ export const ConvertToGrnModal = ({
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Document / PDF / Image Proof Upload */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+            <Paperclip className="w-3.5 h-3.5 text-brand" />
+            Upload Inward Document / Vendor Challan / Invoice Copy (PDF or Image)
+          </label>
+          {!attachmentPreview ? (
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-brand/60 rounded-xl p-4 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition group">
+              <div className="p-2.5 rounded-full bg-white shadow-xs border border-slate-200 group-hover:scale-105 transition">
+                <FileUp className="w-5 h-5 text-brand" />
+              </div>
+              <span className="text-xs font-semibold text-slate-700 mt-2">
+                Click to attach challan/invoice copy or drag &amp; drop
+              </span>
+              <span className="text-[11px] text-slate-400 mt-0.5">
+                Supports PDF, PNG, JPG, JPEG, WEBP (Max 8MB)
+              </span>
+              <input
+                type="file"
+                accept=".pdf, image/png, image/jpeg, image/jpg, image/webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
+          ) : (
+            <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+              <div className="flex items-center gap-3 overflow-hidden">
+                <div className="p-2 bg-white rounded-lg border border-slate-200 flex-shrink-0">
+                  {attachmentType.includes('pdf') || attachmentName.toLowerCase().endsWith('.pdf') ? (
+                    <FileText className="w-5 h-5 text-rose-500" />
+                  ) : (
+                    <Image className="w-5 h-5 text-emerald-500" />
+                  )}
+                </div>
+                <div className="truncate">
+                  <p className="text-xs font-bold text-slate-800 truncate">{attachmentName}</p>
+                  <p className="text-[10px] text-slate-400 uppercase font-mono">{attachmentType || 'Attachment'}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveFile}
+                className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer flex-shrink-0"
+                title="Remove File"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
           )}
         </div>
