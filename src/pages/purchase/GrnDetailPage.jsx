@@ -16,6 +16,7 @@ import {
   ExternalLink,
   Download,
   Paperclip,
+  Eye,
 } from 'lucide-react';
 import { purchaseService } from '../../services/purchase.service';
 import { adminService } from '../../services/admin.service';
@@ -41,6 +42,17 @@ export const GrnDetailPage = () => {
   const [attachmentPreview, setAttachmentPreview] = useState('');
   const [attachmentName, setAttachmentName] = useState('');
   const [attachmentType, setAttachmentType] = useState('');
+  const [previewDoc, setPreviewDoc] = useState(null);
+
+  const getFileUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+      return url;
+    }
+    // Target backend server origin directly so it never 404s
+    const backendOrigin = 'http://localhost:5000';
+    return `${backendOrigin}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   useEffect(() => {
     if (id === 'new' || id === 'create') {
@@ -271,15 +283,20 @@ export const GrnDetailPage = () => {
                     <p className="text-[10px] text-slate-400 font-mono">Uploaded Document</p>
                   </div>
                 </div>
-                <a
-                  href={grn.attachment_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand/40 shadow-2xs transition"
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPreviewDoc({
+                      url: grn.attachment_url,
+                      name: grn.attachment_name || 'Inward Document',
+                      type: grn.attachment_type || '',
+                    })
+                  }
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand/40 shadow-2xs transition cursor-pointer"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <Eye className="w-3.5 h-3.5" />
                   View File
-                </a>
+                </button>
               </div>
             )}
             {grn.documents?.filter((d) => d.file_url !== grn.attachment_url).map((doc, dIdx) => (
@@ -299,15 +316,20 @@ export const GrnDetailPage = () => {
                     </p>
                   </div>
                 </div>
-                <a
-                  href={doc.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand/40 shadow-2xs transition"
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPreviewDoc({
+                      url: doc.file_url,
+                      name: doc.file_name || 'Document',
+                      type: doc.file_type || '',
+                    })
+                  }
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand/40 shadow-2xs transition cursor-pointer"
                 >
-                  <ExternalLink className="w-3.5 h-3.5" />
+                  <Eye className="w-3.5 h-3.5" />
                   View File
-                </a>
+                </button>
               </div>
             ))}
           </div>
@@ -479,6 +501,48 @@ export const GrnDetailPage = () => {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Document In-App Preview Modal */}
+      {previewDoc && (
+        <Modal
+          isOpen={Boolean(previewDoc)}
+          onClose={() => setPreviewDoc(null)}
+          title={`Document Preview: ${previewDoc.name}`}
+          subtitle="Inward verification proof & QC documents"
+          maxWidth="max-w-4xl"
+        >
+          <div className="space-y-4">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-700 truncate max-w-md">{previewDoc.name}</span>
+              <a
+                href={getFileUrl(previewDoc.url)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-brand text-white hover:opacity-90 transition cursor-pointer"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                Open in Full Window
+              </a>
+            </div>
+
+            <div className="flex items-center justify-center min-h-[350px] max-h-[75vh] overflow-auto bg-slate-900/5 rounded-xl border border-slate-200 p-2">
+              {previewDoc.url?.toLowerCase().includes('.pdf') || previewDoc.type?.includes('pdf') ? (
+                <iframe
+                  src={getFileUrl(previewDoc.url)}
+                  title={previewDoc.name}
+                  className="w-full h-[70vh] rounded-lg border-0 bg-white"
+                />
+              ) : (
+                <img
+                  src={getFileUrl(previewDoc.url)}
+                  alt={previewDoc.name}
+                  className="max-h-[70vh] w-auto max-w-full object-contain rounded-lg shadow-sm mx-auto"
+                />
+              )}
+            </div>
+          </div>
         </Modal>
       )}
     </div>
