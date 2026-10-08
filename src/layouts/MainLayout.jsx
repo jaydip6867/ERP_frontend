@@ -1145,14 +1145,17 @@ export const MainLayout = () => {
             <Menu className="w-5 h-5" />
           </button>
 
-          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 text-inherit no-underline">
-            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-sm shadow-indigo-200">
-              D
-            </div>
-            <div>
-              <span className="font-bold text-slate-900 text-base sm:text-lg tracking-tight">Danza ERP</span>
-              <span className="hidden sm:inline-block ml-2 text-xs font-medium px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-100">
-                Enterprise
+          <Link to="/" className="flex items-center gap-2.5 text-inherit no-underline">
+            <img src="/danza-mark.png" alt="Danza-son" className="h-8 sm:h-9 w-auto object-contain shrink-0" />
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-[#149346] text-base sm:text-lg tracking-tight">DANZA-SON</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#149346]/10 text-[#149346] border border-[#149346]/20">
+                  ERP
+                </span>
+              </div>
+              <span className="hidden md:block text-[9px] font-semibold text-slate-400 tracking-wider -mt-0.5 uppercase">
+                Ur Path Ur Style
               </span>
             </div>
           </Link>
@@ -1282,11 +1285,12 @@ export const MainLayout = () => {
         >
           {/* Mobile Drawer Header with Close Button */}
           <div className="p-4 border-b border-slate-100 flex items-center justify-between lg:hidden shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-xs">
-                D
+            <div className="flex items-center gap-2">
+              <img src="/danza-mark.png" alt="Danza-son" className="h-7 w-auto object-contain shrink-0" />
+              <div>
+                <span className="font-extrabold text-[#149346] text-base tracking-tight block">DANZA-SON</span>
+                <span className="text-[9px] font-semibold text-slate-400 block -mt-1 uppercase">Ur Path Ur Style</span>
               </div>
-              <span className="font-bold text-slate-900 text-base">Danza ERP</span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}

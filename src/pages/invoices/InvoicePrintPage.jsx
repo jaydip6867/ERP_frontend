@@ -259,9 +259,17 @@ export const InvoicePrintPage = () => {
         {/* Company & Supplier Header */}
         <div className="grid grid-cols-2 gap-4 border-b border-slate-800 pb-3">
           <div>
-            <h2 className="text-lg font-black text-slate-950 uppercase tracking-tight">
-              {companyProfile.company_name}
-            </h2>
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <img src="/danza-mark.png" alt="Danza-son" className="h-8 w-auto object-contain flex-shrink-0" />
+              <div>
+                <h2 className="text-lg font-black text-slate-950 uppercase tracking-tight leading-none">
+                  {companyProfile.company_name || 'DANZA-SON ENTERPRISES'}
+                </h2>
+                <span className="text-[10px] font-bold text-[#149346] tracking-wider uppercase block mt-0.5">
+                  Ur Path Ur Style
+                </span>
+              </div>
+            </div>
             <p className="text-[11px] text-slate-700 leading-tight mt-0.5">
               {companyProfile.address || 'Plot 104, GIDC Sachin Industrial Area, Surat, Gujarat - 394230'}
             </p>

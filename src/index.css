@@ -1,18 +1,60 @@
 @import "tailwindcss";
 
+@theme {
+  /* Official Brand Colors from Danza-son Brand Guidelines */
+  --color-brand: #149346;
+  --color-brand-dark: #0f7437;
+  --color-brand-deep: #0a4d25;
+  --color-brand-light: #e8f5ec;
+  --color-brand-gray: #eeeff0;
+
+  /* Primary Brand Green Palette */
+  --color-primary-50: #f0fbf4;
+  --color-primary-100: #dcfce7;
+  --color-primary-200: #bbf7d0;
+  --color-primary-300: #86efac;
+  --color-primary-400: #34d399;
+  --color-primary-500: #1ba751;
+  --color-primary-600: #149346;
+  --color-primary-700: #0f7437;
+  --color-primary-800: #0d602e;
+  --color-primary-900: #0a4d25;
+  --color-primary-950: #042912;
+
+  /* Remap indigo (used across ERP buttons, active tabs, badges, rings) directly to Brand Green */
+  --color-indigo-50: #f0fbf4;
+  --color-indigo-100: #dcfce7;
+  --color-indigo-200: #bbf7d0;
+  --color-indigo-300: #86efac;
+  --color-indigo-400: #34d399;
+  --color-indigo-500: #1ba751;
+  --color-indigo-600: #149346;
+  --color-indigo-700: #0f7437;
+  --color-indigo-800: #0d602e;
+  --color-indigo-900: #0a4d25;
+  --color-indigo-950: #042912;
+
+  /* Brand Typography */
+  --font-sans: 'Montserrat', 'Microsoft Sans Serif', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Montserrat', 'Ibrand Regular', sans-serif;
+}
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Montserrat', 'Microsoft Sans Serif', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color-scheme: light dark;
+  color-scheme: light;
+  --brand-green: #149346;
+  --brand-gray: #eeeff0;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: #eeeff0;
   color: #0f172a;
+  font-family: 'Montserrat', 'Microsoft Sans Serif', system-ui, -apple-system, sans-serif;
 }
 
 #root {

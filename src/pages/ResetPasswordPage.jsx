@@ -75,15 +75,15 @@ export const ResetPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col justify-center items-center p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-[#0a4d25] via-slate-900 to-[#042912] flex flex-col justify-center items-center p-4 sm:p-6">
       <div className="w-full max-w-md">
         {/* Brand Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-indigo-600 text-white font-extrabold text-2xl shadow-lg shadow-indigo-500/30 mb-4 border border-indigo-400/20">
-            D
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-3">
+            <img src="/danza-logo-white.png" alt="DANZA-SON" className="h-14 sm:h-16 w-auto object-contain drop-shadow-md" />
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Danza ERP</h1>
-          <p className="text-slate-400 text-sm mt-1">Set New Corporate Password</p>
+          <p className="text-emerald-400 font-semibold text-xs tracking-widest uppercase">"Ur Path Ur Style"</p>
+          <p className="text-slate-400 text-xs mt-1">Set New Corporate Password</p>
         </div>
 
         <Card className="border-slate-800 shadow-2xl bg-white/95 backdrop-blur">
