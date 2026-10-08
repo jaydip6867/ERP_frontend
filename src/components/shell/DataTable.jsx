@@ -80,69 +80,79 @@ export const DataTable = ({
       </div>
 
       {/* Mobile Card View (screens smaller than md: 768px) */}
-      <div className="block md:hidden divide-y divide-slate-100 bg-slate-50/30">
+      <div className="block md:hidden p-2 space-y-2 bg-slate-50/50">
         {rows.length === 0 ? (
-          <div className="px-4 py-12 text-center text-slate-400 italic text-sm bg-white">
+          <div className="px-4 py-8 text-center text-slate-400 italic text-xs bg-white rounded-lg border border-slate-200">
             {emptyMessage}
           </div>
         ) : (
-          rows.map((row, rowIdx) => (
-            <div
-              key={row[rowKey] || row._id || row.id || rowIdx}
-              onClick={() => onRowClick && onRowClick(row)}
-              className={`p-4 bg-white transition-all space-y-2.5 ${
-                onRowClick ? 'cursor-pointer active:bg-indigo-50/60' : ''
-              }`}
-            >
-              {/* Primary Column / Card Header */}
-              {columns.length > 0 && (
-                <div className="pb-2 border-b border-slate-100 flex items-start justify-between gap-2">
-                  <div className="flex-1">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
-                      {columns[0].header}
-                    </span>
-                    <div className="text-sm font-semibold text-slate-900">
-                      {columns[0].render
-                        ? columns[0].render(row[columns[0].key], row, rowIdx)
-                        : row[columns[0].key] ?? '—'}
+          rows.map((row, rowIdx) => {
+            const remainingCols = columns.slice(1);
+            return (
+              <div
+                key={row[rowKey] || row._id || row.id || rowIdx}
+                onClick={() => onRowClick && onRowClick(row)}
+                className={`p-2.5 bg-white rounded-lg border border-slate-200/90 shadow-2xs transition-all space-y-2 ${
+                  onRowClick ? 'cursor-pointer active:bg-indigo-50/40' : ''
+                }`}
+              >
+                {/* Primary Column / Card Header */}
+                {columns.length > 0 && (
+                  <div className="pb-1.5 border-b border-slate-100 flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[9px] uppercase font-bold tracking-wider text-slate-400 block mb-0.5">
+                        {columns[0].header}
+                      </span>
+                      <div className="text-xs font-bold text-slate-900 leading-snug">
+                        {columns[0].render
+                          ? columns[0].render(row[columns[0].key], row, rowIdx)
+                          : row[columns[0].key] ?? '—'}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Remaining Columns as Key-Value Pairs */}
-              <div className="space-y-1.5 text-xs">
-                {columns.slice(1).map((col, cIdx) => (
+                {/* Remaining Columns as Compact 2-Column Grid */}
+                {remainingCols.length > 0 && (
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px] leading-tight">
+                    {remainingCols.map((col, cIdx) => {
+                      const isLastOdd = remainingCols.length % 2 !== 0 && cIdx === remainingCols.length - 1;
+                      return (
+                        <div
+                          key={col.key || cIdx + 1}
+                          className={`bg-slate-50/80 border border-slate-100 rounded px-2 py-1 flex flex-col justify-center min-w-0 ${
+                            isLastOdd ? 'col-span-2' : ''
+                          }`}
+                        >
+                          <span className="text-[9px] uppercase font-semibold text-slate-400 truncate tracking-wide">
+                            {col.header}
+                          </span>
+                          <div className={`text-[11px] font-medium text-slate-800 truncate mt-0.5 ${col.cellClassName || ''}`}>
+                            {col.render ? col.render(row[col.key], row, rowIdx) : row[col.key] ?? '—'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Action Buttons for Mobile Card */}
+                {actions && (
                   <div
-                    key={col.key || cIdx + 1}
-                    className="flex items-center justify-between py-1 px-1 rounded-sm gap-2"
+                    className="pt-1.5 border-t border-slate-100 flex items-center justify-end gap-1.5 text-xs [&_button]:text-xs [&_button]:py-1 [&_button]:px-2 [&_svg]:w-3.5 [&_svg]:h-3.5"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="font-semibold text-slate-500 text-[11px] shrink-0">
-                      {col.header}:
-                    </span>
-                    <div className={`text-right text-slate-800 ${col.cellClassName || ''}`}>
-                      {col.render ? col.render(row[col.key], row, rowIdx) : row[col.key] ?? '—'}
-                    </div>
+                    {actions(row)}
                   </div>
-                ))}
+                )}
               </div>
-
-              {/* Action Buttons for Mobile Card */}
-              {actions && (
-                <div
-                  className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {actions(row)}
-                </div>
-              )}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
       {pagination && pagination.totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row gap-2.5 items-center justify-between px-4 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-600">
+        <div className="flex flex-col sm:flex-row gap-2 items-center justify-between px-3 py-2 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-600">
           <div className="text-center sm:text-left">
             Showing <span className="font-semibold">{((pagination.page - 1) * pagination.limit) + 1}</span> to{' '}
             <span className="font-semibold">
@@ -154,37 +164,37 @@ export const DataTable = ({
             <button
               disabled={pagination.page <= 1}
               onClick={() => onPageChange(1)}
-              className="p-1.5 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+              className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
               title="First Page"
             >
-              <ChevronsLeft className="w-4 h-4" />
+              <ChevronsLeft className="w-3.5 h-3.5" />
             </button>
             <button
               disabled={pagination.page <= 1}
               onClick={() => onPageChange(pagination.page - 1)}
-              className="p-1.5 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+              className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
               title="Previous Page"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-            <span className="px-3 py-1 bg-white border border-slate-300 rounded font-medium text-slate-800">
+            <span className="px-2.5 py-0.5 bg-white border border-slate-300 rounded font-medium text-slate-800 text-xs">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <button
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => onPageChange(pagination.page + 1)}
-              className="p-1.5 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+              className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
               title="Next Page"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
             <button
               disabled={pagination.page >= pagination.totalPages}
               onClick={() => onPageChange(pagination.totalPages)}
-              className="p-1.5 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
+              className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition"
               title="Last Page"
             >
-              <ChevronsRight className="w-4 h-4" />
+              <ChevronsRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
