@@ -64,6 +64,8 @@ import { StockReservationsPage } from '../pages/inventory/StockReservationsPage'
 // Purchase (Module 08)
 import { PurchaseDashboardPage } from '../pages/purchase/PurchaseDashboardPage';
 import { SuppliersListPage } from '../pages/purchase/SuppliersListPage';
+import { SupplierCategoriesPage } from '../pages/purchase/SupplierCategoriesPage';
+import { InquiriesQuotationsPage } from '../pages/purchase/InquiriesQuotationsPage';
 import { PurchaseRequisitionsPage } from '../pages/purchase/PurchaseRequisitionsPage';
 import { PurchaseOrdersListPage } from '../pages/purchase/PurchaseOrdersListPage';
 import { PurchaseOrderDetailPage } from '../pages/purchase/PurchaseOrderDetailPage';
@@ -640,6 +642,22 @@ export const AppRoutes = () => {
             element={
               <PermissionGuard module="procurement" action="can_view">
                 <SuppliersListPage />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="purchase/categories"
+            element={
+              <PermissionGuard module="procurement" action="can_view">
+                <SupplierCategoriesPage />
+              </PermissionGuard>
+            }
+          />
+          <Route
+            path="purchase/inquiries"
+            element={
+              <PermissionGuard module="procurement" action="can_view">
+                <InquiriesQuotationsPage />
               </PermissionGuard>
             }
           />

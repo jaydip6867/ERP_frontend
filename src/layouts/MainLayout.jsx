@@ -59,8 +59,8 @@ import {
   Printer,
   Scissors,
   Crown,
-  BookOpen,
   Heart,
+  MessageSquare,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -93,6 +93,18 @@ const navigationItems = [
     name: 'Suppliers Directory',
     path: '/purchase/suppliers',
     icon: Building2,
+    module: 'procurement',
+  },
+  {
+    name: 'Supplier Categories',
+    path: '/purchase/categories',
+    icon: Tag,
+    module: 'procurement',
+  },
+  {
+    name: 'Inquiries & Quotations',
+    path: '/purchase/inquiries',
+    icon: MessageSquare,
     module: 'procurement',
   },
   {

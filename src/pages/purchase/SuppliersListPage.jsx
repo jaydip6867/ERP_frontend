@@ -16,6 +16,7 @@ import {
   CreditCard,
   ExternalLink,
   Calendar,
+  Tag,
 } from 'lucide-react';
 import { purchaseService } from '../../services/purchase.service';
 import { PageHeader } from '../../components/shell/PageHeader';
@@ -28,11 +29,17 @@ export const SuppliersListPage = () => {
   const navigate = useNavigate();
   const [suppliers, setSuppliers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categoriesList, setCategoriesList] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState(null);
+
+  // Quick category creation inside supplier modal
+  const [showQuickCategoryModal, setShowQuickCategoryModal] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [savingCat, setSavingCat] = useState(false);
 
   // Supplier dossier view modal states
   const [showViewModal, setShowViewModal] = useState(false);
@@ -60,8 +67,44 @@ export const SuppliersListPage = () => {
   });
 
   useEffect(() => {
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
     loadSuppliers(pagination.page);
   }, [pagination.page, search, categoryFilter]);
+
+  const loadCategories = async () => {
+    try {
+      const res = await purchaseService.getCategories();
+      const list = Array.isArray(res.data) ? res.data : [];
+      setCategoriesList(list);
+    } catch (err) {
+      console.error('Failed to load supplier categories:', err);
+    }
+  };
+
+  const handleCreateQuickCategory = async (e) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+    try {
+      setSavingCat(true);
+      const res = await purchaseService.createCategory({ name: newCatName.trim() });
+      const newCat = res.data;
+      await loadCategories();
+      setFormData((prev) => ({
+        ...prev,
+        category: newCat.code || newCat.name,
+        category_id: newCat._id,
+      }));
+      setNewCatName('');
+      setShowQuickCategoryModal(false);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to create category');
+    } finally {
+      setSavingCat(false);
+    }
+  };
 
   const loadSuppliers = async (page = 1) => {
     try {
@@ -265,13 +308,22 @@ export const SuppliersListPage = () => {
           { label: 'Suppliers' },
         ]}
         actions={
-          <button
-            onClick={handleOpenCreate}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm cursor-pointer transition"
-          >
-            <Plus className="w-4 h-4" />
-            Add Supplier
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/purchase/categories')}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 shadow-sm cursor-pointer transition"
+            >
+              <Tag className="w-4 h-4 text-emerald-600" />
+              Supplier Categories
+            </button>
+            <button
+              onClick={handleOpenCreate}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm cursor-pointer transition"
+            >
+              <Plus className="w-4 h-4" />
+              Add Supplier
+            </button>
+          </div>
         }
       />
 
@@ -284,14 +336,10 @@ export const SuppliersListPage = () => {
             label: 'All Categories',
             value: categoryFilter,
             onChange: setCategoryFilter,
-            options: [
-              { label: 'Raw Materials', value: 'raw_materials' },
-              { label: 'Consumables & Hardware', value: 'consumables' },
-              { label: 'Packaging', value: 'packaging' },
-              { label: 'Machinery & Spares', value: 'machinery' },
-              { label: 'Services', value: 'services' },
-              { label: 'General', value: 'general' },
-            ],
+            options: categoriesList.map((c) => ({
+              label: c.name,
+              value: c.code || c.name,
+            })),
           },
         ]}
         onReset={() => {
@@ -396,18 +444,46 @@ export const SuppliersListPage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Category</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-slate-700">Category</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowQuickCategoryModal(true)}
+                    className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 flex items-center gap-0.5"
+                  >
+                    <Plus className="w-3 h-3" /> Add New
+                  </button>
+                </div>
                 <select
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) => {
+                    const selCat = categoriesList.find(
+                      (c) => c.code === e.target.value || c.name === e.target.value || c._id === e.target.value
+                    );
+                    setFormData({
+                      ...formData,
+                      category: e.target.value,
+                      category_id: selCat?._id || null,
+                    });
+                  }}
                   className="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none"
                 >
-                  <option value="raw_materials">Raw Materials</option>
-                  <option value="consumables">Consumables & Hardware</option>
-                  <option value="packaging">Packaging</option>
-                  <option value="machinery">Machinery & Spares</option>
-                  <option value="services">Services</option>
-                  <option value="general">General</option>
+                  {categoriesList.length > 0 ? (
+                    categoriesList.map((c) => (
+                      <option key={c._id || c.code} value={c.code || c.name}>
+                        {c.name}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="RAW_MATERIALS">Raw Materials</option>
+                      <option value="CONSUMABLES">Consumables & Hardware</option>
+                      <option value="PACKAGING">Packaging</option>
+                      <option value="MACHINERY">Machinery & Spares</option>
+                      <option value="SERVICES">Services</option>
+                      <option value="GENERAL">General</option>
+                    </>
+                  )}
                 </select>
               </div>
               <div>
@@ -740,6 +816,46 @@ export const SuppliersListPage = () => {
           </div>
         </Modal>
       )}
+
+      {/* Quick Category Modal */}
+      <Modal
+        isOpen={showQuickCategoryModal}
+        onClose={() => setShowQuickCategoryModal(false)}
+        title="Create New Supplier Category"
+        size="sm"
+      >
+        <form onSubmit={handleCreateQuickCategory} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              Category Name <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Electrical Components"
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              className="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={() => setShowQuickCategoryModal(false)}
+              className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={savingCat || !newCatName.trim()}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold disabled:opacity-50 transition shadow-sm"
+            >
+              {savingCat ? 'Creating...' : 'Create & Select'}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

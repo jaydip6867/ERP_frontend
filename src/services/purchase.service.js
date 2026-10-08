@@ -28,6 +28,18 @@ export const purchaseService = {
   createInvoice: (data) => apiClient.post('/purchase/invoices', data),
   getReturns: (params) => apiClient.get('/purchase/returns', { params }),
   createReturn: (data) => apiClient.post('/purchase/returns', data),
+
+  // Supplier Categories
+  getCategories: (params) => apiClient.get('/purchase/categories', { params }),
+  createCategory: (data) => apiClient.post('/purchase/categories', data),
+  updateCategory: (id, data) => apiClient.put(`/purchase/categories/${id}`, data),
+  deleteCategory: (id) => apiClient.delete(`/purchase/categories/${id}`),
+
+  // Inquiries / Quotations (RFQ)
+  getInquiries: (params) => apiClient.get('/purchase/inquiries', { params }),
+  getInquiryById: (id) => apiClient.get(`/purchase/inquiries/${id}`),
+  createInquiry: (data) => apiClient.post('/purchase/inquiries', data),
+  updateSupplierQuotationStatus: (id, supplierId, data) => apiClient.put(`/purchase/inquiries/${id}/suppliers/${supplierId}/status`, data),
 };
 
 export default purchaseService;
