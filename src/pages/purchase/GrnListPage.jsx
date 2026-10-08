@@ -1,16 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { PackageCheck, Plus, Eye, CheckCircle2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { PackageCheck, Plus, Eye, CheckCircle2, RefreshCw } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { purchaseService } from '../../services/purchase.service';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { DataTable } from '../../components/shell/DataTable';
 import { StatusBadge } from '../../components/shell/StatusBadge';
+import { ConvertToGrnModal } from '../../components/purchase/ConvertToGrnModal';
 
 export const GrnListPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const poIdParam = searchParams.get('po_id');
+
   const [grns, setGrns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
+  const [showCreateModal, setShowCreateModal] = useState(Boolean(poIdParam));
+  const [selectedPoId, setSelectedPoId] = useState(poIdParam || '');
+
+  useEffect(() => {
+    if (poIdParam) {
+      setSelectedPoId(poIdParam);
+      setShowCreateModal(true);
+    }
+  }, [poIdParam]);
 
   useEffect(() => {
     loadGrns(pagination.page);
@@ -97,6 +110,27 @@ export const GrnListPage = () => {
           { label: 'Purchase', href: '/purchase' },
           { label: 'GRN' },
         ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => loadGrns(pagination.page)}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 cursor-pointer"
+            >
+              <RefreshCw className={`w-4 h-4 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+            <button
+              onClick={() => {
+                setSelectedPoId('');
+                setShowCreateModal(true);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-brand hover:opacity-90 text-white shadow-sm cursor-pointer transition"
+            >
+              <Plus className="w-4 h-4" />
+              Create GRN from PO
+            </button>
+          </div>
+        }
       />
 
       <DataTable
@@ -131,6 +165,21 @@ export const GrnListPage = () => {
           </div>
         )}
       />
+
+      {/* Convert / Create GRN Modal */}
+      {showCreateModal && (
+        <ConvertToGrnModal
+          isOpen={showCreateModal}
+          onClose={() => {
+            setShowCreateModal(false);
+            setSelectedPoId('');
+          }}
+          poId={selectedPoId}
+          onSuccess={() => {
+            loadGrns(pagination.page);
+          }}
+        />
+      )}
     </div>
   );
 };

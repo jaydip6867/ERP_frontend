@@ -4,12 +4,14 @@ import { ShoppingCart, ArrowLeft, PackageCheck, Building2, Calendar, FileText } 
 import { purchaseService } from '../../services/purchase.service';
 import { PageHeader } from '../../components/shell/PageHeader';
 import { StatusBadge } from '../../components/shell/StatusBadge';
+import { ConvertToGrnModal } from '../../components/purchase/ConvertToGrnModal';
 
 export const PurchaseOrderDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [po, setPo] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showGrnModal, setShowGrnModal] = useState(false);
 
   useEffect(() => {
     if (id === 'new' || id === 'create') {
@@ -63,13 +65,15 @@ export const PurchaseOrderDetailPage = () => {
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
-            <button
-              onClick={() => navigate(`/purchase/grn?po_id=${po._id}`)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
-            >
-              <PackageCheck className="w-4 h-4" />
-              Receive Material (GRN)
-            </button>
+            {po.status !== 'cancelled' && (
+              <button
+                onClick={() => setShowGrnModal(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-brand hover:opacity-90 text-white shadow-sm transition cursor-pointer"
+              >
+                <PackageCheck className="w-4 h-4" />
+                Convert to GRN
+              </button>
+            )}
           </div>
         }
       />
@@ -131,6 +135,17 @@ export const PurchaseOrderDetailPage = () => {
           </tbody>
         </table>
       </div>
+
+      {showGrnModal && (
+        <ConvertToGrnModal
+          isOpen={showGrnModal}
+          onClose={() => setShowGrnModal(false)}
+          purchaseOrder={po}
+          onSuccess={() => {
+            loadPo();
+          }}
+        />
+      )}
     </div>
   );
 };

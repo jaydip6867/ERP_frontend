@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ShoppingCart, Plus, Eye, Trash2, CheckCircle2, AlertCircle, Calendar, Building2, Package, RefreshCw } from 'lucide-react';
+import { ShoppingCart, Plus, Eye, Trash2, CheckCircle2, AlertCircle, Calendar, Building2, Package, RefreshCw, PackageCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { purchaseService } from '../../services/purchase.service';
 import { adminService } from '../../services/admin.service';
@@ -9,6 +9,7 @@ import { DataTable } from '../../components/shell/DataTable';
 import { StatusBadge } from '../../components/shell/StatusBadge';
 import { FilterBar } from '../../components/shell/FilterBar';
 import { Modal } from '../../components/shell/Modal';
+import { ConvertToGrnModal } from '../../components/purchase/ConvertToGrnModal';
 
 export const PurchaseOrdersListPage = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export const PurchaseOrdersListPage = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [grnModalPo, setGrnModalPo] = useState(null);
 
   // Create Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -356,15 +358,40 @@ export const PurchaseOrdersListPage = () => {
         onPageChange={(p) => setPagination((prev) => ({ ...prev, page: p }))}
         onRowClick={(row) => navigate(`/purchase/orders/${row._id || row.id}`)}
         actions={(row) => (
-          <button
-            onClick={() => navigate(`/purchase/orders/${row._id || row.id}`)}
-            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
-            title="View PO Details"
-          >
-            <Eye className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1.5 justify-end">
+            {row.status !== 'completed' && row.status !== 'cancelled' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setGrnModalPo(row);
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer"
+                title="Convert to Goods Receipt (GRN)"
+              >
+                <PackageCheck className="w-3.5 h-3.5 flex-shrink-0" />
+                Convert to GRN
+              </button>
+            )}
+            <button
+              onClick={() => navigate(`/purchase/orders/${row._id || row.id}`)}
+              className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition cursor-pointer"
+              title="View PO Details"
+            >
+              <Eye className="w-4 h-4 flex-shrink-0" />
+            </button>
+          </div>
         )}
       />
+
+      {/* Convert to GRN Modal */}
+      {grnModalPo && (
+        <ConvertToGrnModal
+          isOpen={Boolean(grnModalPo)}
+          onClose={() => setGrnModalPo(null)}
+          purchaseOrder={grnModalPo}
+          onSuccess={() => loadOrders(pagination.page)}
+        />
+      )}
 
       {/* Create Purchase Order Modal */}
       {showCreateModal && (
